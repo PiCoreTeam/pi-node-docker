@@ -191,6 +191,16 @@ function init_db() {
 	fi
 	pushd $PGHOME
 
+	# Sometimes, the Postgres DB can end in a broken state where the data folder exists, yet the .quickstart-initialized file doesn't, which indicates that
+	# the init process failed somehow. In that case, it's preferable to clear the stellar volume and exit, so that the next time the container is run,
+	# the DB can be properly initialized again. This will result in data loss for the user, but the DB can be considered corrupted in that case anyway.
+	if [ -d "$PGDATA" ]
+	then
+		echo "invalid postgres state, clearing stellar volume"
+		rm -rf $STELLAR_HOME/*
+		exit 1
+	fi
+
 	# workaround!!!! from: https://github.com/nimiq/docker-postgresql93/issues/2
 	mkdir /etc/ssl/private-copy; mv /etc/ssl/private/* /etc/ssl/private-copy/; rm -r /etc/ssl/private; mv /etc/ssl/private-copy /etc/ssl/private; chmod -R 0700 /etc/ssl/private; chown -R postgres /etc/ssl/private
 	# end workaround
