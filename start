@@ -1,20 +1,22 @@
 #! /usr/bin/env bash
 set -e
 
-export NETWORK_PASSPHRASE="Pi Testnet ; June 2020"
-
-export GODEBUG=asyncpreemptoff=1 # disable golang preemption
-
 export STELLAR_HOME="/opt/stellar"
 export PGHOME="$STELLAR_HOME/postgresql"
 export SUPHOME="$STELLAR_HOME/supervisor"
 export COREHOME="$STELLAR_HOME/core"
 export HZHOME="$STELLAR_HOME/horizon"
 
-export PGBIN="/usr/lib/postgresql/9.6/bin"
+export HISTHOME="$STELLAR_HOME/history"
+export LOCALHIST="$HISTHOME/local"
+
+export PGBIN="/usr/lib/postgresql/9.5/bin"
 export PGDATA="$PGHOME/data"
 export PGUSER="stellar"
 export PGPORT=5432
+
+ENABLE_HORIZON_CAPTIVE_CORE=false
+ENABLE_CORE_MANUAL_CLOSE=false
 
 QUICKSTART_INITIALIZED=false
 CURRENT_POSTGRES_PID=""
@@ -78,7 +80,7 @@ function process_args() {
 
 	case "$NETWORK" in
 	testnet)
-    export NETWORK_PASSPHRASE="Pi Testnet ; June 2020"
+    export NETWORK_PASSPHRASE="Pi Testnet"
     export HISTORY_ARCHIVE_URLS="http://testnet-history.minepi.com:31403/"
     ;;
 	pubnet)
@@ -86,8 +88,8 @@ function process_args() {
     export HISTORY_ARCHIVE_URLS="http://mainnet-history.minepi.com:31403"
     ;;
 	standalone)
-    #export NETWORK_PASSPHRASE="Standalone Network ; June 2020"
-    export NETWORK_PASSPHRASE="Pi Testnet ; June 2020"	
+    export NETWORK_PASSPHRASE="Pi Testnet ; June 2020"
+
     # h1570ry - we'll start a webserver connected to history directory later on
     export HISTORY_ARCHIVE_URLS="http://localhost:1570"
     ;;
@@ -179,9 +181,9 @@ function copy_pgpass() {
 	$CP /opt/stellar/postgresql/.pgpass /root/
 	chmod 0600 /root/.pgpass
 
-	$CP /opt/stellar/postgresql/.pgpass /home/stellar
-	chmod 0600 /home/stellar/.pgpass
-	chown stellar:stellar /home/stellar/.pgpass
+	$CP /opt/stellar/postgresql/.pgpass /var/lib/stellar
+	chmod 0600 /var/lib/stellar/.pgpass
+	chown stellar:stellar /var/lib/stellar/.pgpass
 }
 
 function init_db() {
@@ -245,14 +247,20 @@ function init_stellar_core() {
 		return 0
 	fi
 
-	run_silent "finalize-core-config" sed -ri "s/__PGPASS__/$PGPASS/g" etc/stellar-core.cfg
+	run_silent "finalize-core-config-pgpass" sed -ri "s/__PGPASS__/$PGPASS/g" etc/stellar-core.cfg
+	local RUN_STANDALONE=false
+	if [ "$NETWORK" = "standalone" ] && [ "$HORIZON_ENABLE_CAPTIVE_CORE" = "false" ]; then
+	  RUN_STANDALONE=true
+	fi
+	run_silent "finalize-core-config-run-standalone" sed -ri "s/__RUN_STANDALONE__/$RUN_STANDALONE/g" etc/stellar-core.cfg
+	run_silent "finalize-core-config-manual-close" sed -ri "s/__MANUAL_CLOSE__/$ENABLE_CORE_MANUAL_CLOSE/g" etc/stellar-core.cfg
 
-    # Set this node's private key (secret_seed) if one is pass through an environment variable.
+	# Set this node's private key (secret_seed) if one is pass through an environment variable.
 	if [ -n "$NODE_PRIVATE_KEY" ]; then
-        run_silent "set-private-key" sed -ri "s/__NODE_PRIVATE_KEY__/$NODE_PRIVATE_KEY/g" $COREHOME/etc/stellar-core.cfg
+		run_silent "set-private-key" sed -ri "s/__NODE_PRIVATE_KEY__/$NODE_PRIVATE_KEY/g" $COREHOME/etc/stellar-core.cfg
 	else
-        GENERATED_PRIVATE_KEY=`stellar-core gen-seed | grep seed | awk '{print $3}'`
-        run_silent "set-private-key" sed -ri "s/__NODE_PRIVATE_KEY__/$GENERATED_PRIVATE_KEY/g" $COREHOME/etc/stellar-core.cfg
+		GENERATED_PRIVATE_KEY=`stellar-core gen-seed | grep seed | awk '{print $3}'`
+		run_silent "set-private-key" sed -ri "s/__NODE_PRIVATE_KEY__/$GENERATED_PRIVATE_KEY/g" $COREHOME/etc/stellar-core.cfg
 	fi
 
 	start_postgres
@@ -262,10 +270,14 @@ function init_stellar_core() {
 	if [ "$NETWORK" == "standalone" ]; then
 		run_silent "init-core-scp" sudo -u stellar stellar-core force-scp --conf etc/stellar-core.cfg
 
-		run_silent "init-history" sudo -u stellar stellar-core new-hist vs --conf $COREHOME/etc/stellar-core.cfg
+		mkdir -p "$HISTHOME"
+		pushd "$HISTHOME"
+		run_silent "chown-history" chown -R stellar:stellar .
+		popd
+
+		run_silent "init-history" sudo -u stellar stellar-core new-hist "local" --conf $COREHOME/etc/stellar-core.cfg
 		# Start local history server
-		mkdir -p /history/vs:
-		pushd /history/vs
+		pushd "$LOCALHIST"
 		webfsd -F -p 1570 > /dev/null 2>&1 &
 		popd
 	fi
