@@ -71,7 +71,7 @@ function process_args() {
       export ENABLE_ASSET_STATS="$1"
       shift
       ;;
-		--enable-horizon-captive-core)
+    --enable-horizon-captive-core)
       ENABLE_HORIZON_CAPTIVE_CORE=true
       ;;
     --enable-core-manual-close)
