@@ -98,7 +98,7 @@ function process_args() {
     export HISTORY_ARCHIVE_URLS="http://mainnet-history.minepi.com:31403"
     ;;
 	standalone)
-    export NETWORK_PASSPHRASE="Pi Testnet ; June 2020"
+    export NETWORK_PASSPHRASE="Pi Testnet"
 
     # h1570ry - we'll start a webserver connected to history directory later on
     export HISTORY_ARCHIVE_URLS="http://localhost:1570"
