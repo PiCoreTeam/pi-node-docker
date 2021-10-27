@@ -4,6 +4,12 @@ set -e
 apt-get update
 apt-get install -y wget
 
+# We install manually OpenSSL and curl versions to fix a certificate issue
+# caused by the expiration of the Let's Encrypt DST Root CA X3 certificate.
+# Details here: https://letsencrypt.org/docs/dst-root-ca-x3-expiration-september-2021/
+# Using a newer version of Ubuntu could directly solve the issue, but upgrading
+# Ubuntu (by rebasing our fork) requires more work and testing.
+
 # Install a recent (Mar 2020) version of OpenSSL
 # https://cloudwafer.com/blog/installing-openssl-on-ubuntu-16-04-18-04/
 cd /usr/local/src
