@@ -91,7 +91,7 @@ function process_args() {
 	case "$NETWORK" in
 	testnet)
     export NETWORK_PASSPHRASE="Pi Testnet"
-    export HISTORY_ARCHIVE_URLS="http://testnet-history.minepi.com:31403/"
+    export HISTORY_ARCHIVE_URLS="https://history.testnet.minepi.com"
     ;;
 	pubnet)
     export NETWORK_PASSPHRASE="Public Pi Network is not launched ; Coming soon"
