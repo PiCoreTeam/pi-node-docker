@@ -1,9 +1,9 @@
-FROM ubuntu:16.04
+FROM ubuntu:20.04
 
 MAINTAINER Bartek Nowotarski <bartek@stellar.org>
 
-ENV STELLAR_CORE_VERSION 15.2.0-440.54b03f7.xenial
-ENV HORIZON_VERSION 1.13.1-94
+ENV STELLAR_CORE_VERSION 18.1.0-762.dc5f5a392.focal
+ENV HORIZON_VERSION 2.5.2-109
 
 EXPOSE 5432
 EXPOSE 8000
@@ -26,6 +26,7 @@ RUN ["ln", "-s", "/opt/stellar/horizon/etc/horizon.env", "/horizon.env"]
 ADD common /opt/stellar-default/common
 ADD pubnet /opt/stellar-default/pubnet
 ADD testnet /opt/stellar-default/testnet
+ADD testnet2 /opt/stellar-default/testnet2
 ADD standalone /opt/stellar-default/standalone
 
 

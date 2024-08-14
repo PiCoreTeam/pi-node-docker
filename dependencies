@@ -1,50 +1,14 @@
 #! /usr/bin/env bash
 set -e
 
-apt-get update
-apt-get install -y wget
-
-# We install manually OpenSSL and curl versions to fix a certificate issue
-# caused by the expiration of the Let's Encrypt DST Root CA X3 certificate.
-# Details here: https://letsencrypt.org/docs/dst-root-ca-x3-expiration-september-2021/
-# Using a newer version of Ubuntu could directly solve the issue, but upgrading
-# Ubuntu (by rebasing our fork) requires more work and testing.
-
-# Install a recent (Mar 2020) version of OpenSSL
-# https://cloudwafer.com/blog/installing-openssl-on-ubuntu-16-04-18-04/
-cd /usr/local/src
-wget https://www.openssl.org/source/openssl-1.1.1f.tar.gz
-apt install build-essential checkinstall zlib1g-dev -y
-tar -xf openssl-1.1.1f.tar.gz
-cd openssl-1.1.1f
-./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib
-make
-make test
-make install
-echo "/usr/local/ssl/lib" > /etc/ld.so.conf.d/openssl-1.1.1f.conf
-ldconfig
-echo 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/local/ssl/bin"' > /etc/environment
-source /etc/environment
-echo "OpenSSL installed"
-
-# Install curl based on the OpenSSL version installed above
-cd /usr/local/src
-wget https://curl.haxx.se/download/curl-7.58.0.tar.gz
-tar -xf curl-7.58.0.tar.gz
-cd curl-7.58.0
-./configure --with-ssl=/usr/local/ssl
-make
-make install
-echo "Curl installed"
-
 # dependencies
+export DEBIAN_FRONTEND=noninteractive
 apt-get update
-apt-get install -y git apt-transport-https \
+apt-get install -y curl wget git apt-transport-https \
                    libpq-dev libsqlite3-dev libsasl2-dev \
                    postgresql-client postgresql postgresql-contrib \
                    sudo vim zlib1g-dev supervisor psmisc \
                    jq netcat # Parsing stellar-core JSON for standalone network and checking core HTTP server
-apt-get install -y webfs
 apt-get clean
 
 echo "\nDone installing dependencies...\n"
