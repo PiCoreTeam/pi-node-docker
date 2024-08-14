@@ -10,7 +10,7 @@ export HZHOME="$STELLAR_HOME/horizon"
 export HISTHOME="$STELLAR_HOME/history"
 export LOCALHIST="$HISTHOME/local"
 
-export PGBIN="/usr/lib/postgresql/9.5/bin"
+export PGBIN="/usr/lib/postgresql/12/bin"
 export PGDATA="$PGHOME/data"
 export PGUSER="stellar"
 export PGPORT=5432
@@ -57,6 +57,9 @@ function process_args() {
 	  --testnet)
 	    NETWORK="testnet"
 	    ;;
+	  --testnet2)
+	    NETWORK="testnet2"
+	    ;;
 	  --pubnet)
 	    NETWORK="pubnet"
 	    ;;
@@ -93,6 +96,10 @@ function process_args() {
     export NETWORK_PASSPHRASE="Pi Testnet"
     export HISTORY_ARCHIVE_URLS="http://testnet-history.minepi.com:31403/"
     ;;
+  	testnet2)
+      export NETWORK_PASSPHRASE="Pi Testnet 5-2024"
+      export HISTORY_ARCHIVE_URLS="https://validator1.testnet2.minepi.com:31403/"
+      ;;
 	pubnet)
     export NETWORK_PASSPHRASE="Public Pi Network is not launched ; Coming soon"
     export HISTORY_ARCHIVE_URLS="http://mainnet-history.minepi.com:31403"
