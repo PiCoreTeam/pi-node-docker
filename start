@@ -97,7 +97,7 @@ function process_args() {
     export HISTORY_ARCHIVE_URLS="http://testnet-history.minepi.com:31403/"
     ;;
   	testnet2)
-      export NETWORK_PASSPHRASE="Pi Testnet 5-2024"
+      export NETWORK_PASSPHRASE="Pi Testnet"
       export HISTORY_ARCHIVE_URLS="https://validator1.testnet2.minepi.com:31403/"
       ;;
 	pubnet)
