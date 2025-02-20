@@ -60,7 +60,7 @@ function process_args() {
 	  --testnet2)
 	    NETWORK="testnet2"
 	    ;;
-	  --mainetrelay)
+	  --mainnetrelay)
 	    NETWORK="mainnet"
 	    ;;
 	  --standalone)
