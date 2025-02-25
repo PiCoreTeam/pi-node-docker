@@ -320,6 +320,11 @@ function init_horizon() {
 		-e "s=__ARCHIVE__=$HISTORY_ARCHIVE_URLS=g" \
 		etc/horizon.env
 
+# initialize defaults
+  cat << EOF >> etc/horizon.env
+export PER_HOUR_RATE_LIMIT=0
+EOF
+
 	if [ "$ENABLE_HORIZON_CAPTIVE_CORE" = "true" ]; then
 	  cat << EOF >> etc/horizon.env
 export ENABLE_CAPTIVE_CORE_INGESTION=true
