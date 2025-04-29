@@ -1,7 +1,5 @@
 FROM ubuntu:20.04
 
-MAINTAINER Bartek Nowotarski <bartek@stellar.org>
-
 ENV STELLAR_CORE_VERSION 19.6.0-1138.b3a6bc281.focal
 ENV HORIZON_VERSION 2.23.1-320
 
