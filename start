@@ -42,6 +42,7 @@ function main() {
 	copy_pgpass
 
 	stop_postgres  # this gets started in init_db
+	start_history_server
 
 	# launch services
 	exec_supervisor
@@ -295,10 +296,6 @@ function init_stellar_core() {
 		popd
 
 		run_silent "init-history" sudo -u stellar stellar-core new-hist "local" --conf $COREHOME/etc/stellar-core.cfg
-		# Start local history server
-		pushd "$LOCALHIST"
-		webfsd -F -p 1570 > /dev/null 2>&1 &
-		popd
 	fi
 
 	touch .quickstart-initialized
@@ -416,6 +413,17 @@ function stop_postgres() {
 	done
 	echo "postgres: down"
 }
+
+function start_history_server() {
+  if [ "$NETWORK" == "testnet2" ]; then
+    echo "Starting webfsd for local history..."
+    mkdir -p "$LOCALHIST"
+    pushd "$LOCALHIST"
+    webfsd -F -p 1570 > /dev/null 2>&1 &
+    popd
+  fi
+}
+
 
 pushd () {
     command pushd "$@" > /dev/null
