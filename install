@@ -12,10 +12,3 @@ apt-get clean
 echo "\nDone installing stellar-core and horizon...\n"
 
 
-curl -L -O https://go.dev/dl/go1.23.2.linux-amd64.tar.gz
-tar -C /usr/local -xzf go1.23.2.linux-amd64.tar.gz
-rm  go1.23.2.linux-amd64.tar.gz
-go install github.com/stellar/go/tools/stellar-archivist@latest
-echo "\nDone installing stellar-archivist\n"
-
-

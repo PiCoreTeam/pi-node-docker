@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 
-ENV STELLAR_CORE_VERSION=19.1.0-943.e801fd93b.focal
+ENV STELLAR_CORE_VERSION=19.4.0-1075.39bee1a2b.focal
 ENV HORIZON_VERSION=2.18.1-284
 
 ENV PATH=$PATH:/usr/local/go/bin
@@ -30,11 +30,6 @@ ADD testnet /opt/stellar-default/testnet
 ADD testnet2 /opt/stellar-default/testnet2
 ADD standalone /opt/stellar-default/standalone
 
-ADD mirror_full_archive.sh /
-ADD horizon_complete_reingest.sh /
-
-RUN ["chmod", "+x", "/mirror_full_archive.sh"]
-RUN ["chmod", "+x", "/horizon_complete_reingest.sh"]
 
 ADD start /
 RUN ["chmod", "+x", "start"]
