@@ -91,8 +91,8 @@ function process_args() {
       ;;
 	pubnet)
     export NETWORK_PASSPHRASE="Pi Network"
-     # h1570ry - we'll start a webserver connected to history directory later on
-    export HISTORY_ARCHIVE_URLS="http://localhost:1570"
+    # Local history + CDN fallback for captive core
+    export HISTORY_ARCHIVE_URLS="http://localhost:1570,https://history.mainnet.minepi.com"
     ;;
 	*)
 		echo "Unknown network: '$NETWORK'" >&2
@@ -276,6 +276,11 @@ function init_horizon() {
 			-e "s=__ARCHIVE__=$HISTORY_ARCHIVE_URLS=g" \
 			etc/horizon.env
 
+		# Configure captive core for mainnet (pubnet)
+		if [ "$NETWORK" == "pubnet" ]; then
+			configure_captive_core
+		fi
+
 		start_postgres
 		run_silent "init-horizon-db" sudo -u stellar ./bin/horizon db init
 
@@ -288,6 +293,61 @@ function init_horizon() {
 	fi
 
 	popd
+}
+
+function configure_captive_core() {
+	echo "Configuring captive core for mainnet..."
+
+	# Remove standalone stellar-core connection settings
+	sed -i '/^export STELLAR_CORE_DATABASE_URL=/d' etc/horizon.env
+	sed -i '/^export STELLAR_CORE_URL=/d' etc/horizon.env
+
+	# Enable captive core ingestion
+	sed -i 's/ENABLE_CAPTIVE_CORE_INGESTION="false"/ENABLE_CAPTIVE_CORE_INGESTION="true"/' etc/horizon.env
+
+	# Add captive core environment variables
+	cat >> etc/horizon.env << 'EOF'
+
+export STELLAR_CORE_BINARY_PATH="/usr/bin/stellar-core"
+export CAPTIVE_CORE_STORAGE_PATH="/opt/stellar/horizon/captive-data"
+export CAPTIVE_CORE_CONFIG_PATH="/opt/stellar/horizon/etc/stellar-core-captive.yml"
+export CAPTIVE_CORE_HTTP_PORT=11726
+EOF
+
+	# Create captive core config file
+	cat > etc/stellar-core-captive.yml << 'EOF'
+NETWORK_PASSPHRASE = "Pi Network"
+
+[[VALIDATORS]]
+NAME="validator1"
+QUALITY="HIGH"
+HOME_DOMAIN="pi-core-team"
+PUBLIC_KEY="GDLA3KOMXKNHU5AGQB2R5VRBYCKM4X37NQVHTWRIQXNCOFOW4MZZSDTL"
+ADDRESS="34.95.11.164:31402"
+HISTORY="curl -sf https://history.mainnet.minepi.com/{0} -o {1}"
+
+[[VALIDATORS]]
+NAME="validator2"
+QUALITY="HIGH"
+HOME_DOMAIN="pi-core-team"
+PUBLIC_KEY="GDGGD5XGBWLYS4XYJSUCX2CQ7ZS2JKIQTDOMPMPUU6LX74AINMRH2LMI"
+ADDRESS="34.88.93.19:31402"
+HISTORY="curl -sf https://history.mainnet.minepi.com/{0} -o {1}"
+
+[[VALIDATORS]]
+NAME="validator3"
+QUALITY="HIGH"
+HOME_DOMAIN="pi-core-team"
+PUBLIC_KEY="GAXTE5AV5OCOEGJE4OPVMN5UJHAKDQCSVMXI4P7SZIGQXVO7LP4JKX4M"
+ADDRESS="34.64.252.77:31502"
+HISTORY="curl -sf https://history.mainnet.minepi.com/{0} -o {1}"
+EOF
+
+	# Create captive data directory
+	mkdir -p captive-data
+	chown stellar:stellar captive-data
+
+	echo "Captive core configured"
 }
 
 function run_migrations() {
