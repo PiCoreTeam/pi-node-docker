@@ -3,31 +3,35 @@
 # Error Category Definitions
 error_categories:
   critical:
-    - "DatabaseConnectionError"
-    - "OutOfMemoryError"
-    - "SystemError"
-    - "FatalError"
-    - "SecurityError"
+    errors:
+      - "DatabaseConnectionError"
+      - "OutOfMemoryError"
+      - "SystemError"
+      - "FatalError"
+      - "SecurityError"
     action: "alert_and_retry"
     
   recoverable:
-    - "TimeoutError"
-    - "ConnectionError"
-    - "RateLimitError"
-    - "TemporaryError"
-    - "NetworkError"
-    - "ServiceUnavailableError"
+    errors:
+      - "TimeoutError"
+      - "ConnectionError"
+      - "RateLimitError"
+      - "TemporaryError"
+      - "NetworkError"
+      - "ServiceUnavailableError"
     action: "auto_retry"
     
   ignorable:
-    - "ClientCancellationError"
-    - "NotFoundError"
-    - "ValidationError"
+    errors:
+      - "ClientCancellationError"
+      - "NotFoundError"
+      - "ValidationError"
     action: "log_only"
     
   warning:
-    - "DeprecationWarning"
-    - "ConfigurationWarning"
+    errors:
+      - "DeprecationWarning"
+      - "ConfigurationWarning"
     action: "log_only"
 
 # Recovery Strategy Definitions
