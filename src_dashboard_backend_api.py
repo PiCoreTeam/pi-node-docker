@@ -7,7 +7,7 @@ import asyncio
 import logging
 from typing import Dict, Any
 from aiohttp import web
-import json
+
 
 
 class DashboardAPI:
@@ -32,11 +32,35 @@ class DashboardAPI:
     
     @web.middleware
     async def _cors_middleware(self, request, handler):
-        """CORS middleware"""
-        response = await handler(request)
-        response.headers['Access-Control-Allow-Origin'] = '*'
+        """CORS middleware with basic preflight handling and restricted origins."""
+        origin = request.headers.get('Origin')
+
+        # Allow overriding CORS origins via config; default to localhost-only.
+        allowed_origins = self.config.get(
+            'allowed_origins',
+            ['http://localhost', 'http://127.0.0.1']
+        )
+
+        # Handle preflight OPTIONS requests directly to avoid 405s on handlers.
+        if request.method == 'OPTIONS':
+            response = web.Response(status=204)
+        else:
+            response = await handler(request)
+
+        # Set CORS headers only for allowed origins.
+        if origin and origin in allowed_origins:
+            response.headers['Access-Control-Allow-Origin'] = origin
+            # Ensure caches vary on Origin when CORS is applied.
+            existing_vary = response.headers.get('Vary')
+            if existing_vary:
+                if 'Origin' not in existing_vary:
+                    response.headers['Vary'] = existing_vary + ', Origin'
+            else:
+                response.headers['Vary'] = 'Origin'
+
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        response.headers['Access-Control-Max-Age'] = '3600'
         return response
     
     async def get_current_metrics(self, request):

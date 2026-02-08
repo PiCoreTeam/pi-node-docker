@@ -3,7 +3,7 @@ Metrics Collection System
 Collects, aggregates, and stores system metrics
 """
 
-import asyncio
+
 import logging
 import time
 from typing import Dict, Any, List
@@ -60,7 +60,7 @@ class MetricsCollector:
     
     async def record_error(self, classification):
         """Record an error classification"""
-        self.metrics.failed_requests += 1
+
         self.logger.debug(f"Recorded error: {classification.error_type}")
     
     async def record_critical_error(self, exception: Exception):
@@ -120,11 +120,7 @@ class MetricsCollector:
     async def _save_metrics(self):
         """Save metrics to storage"""
         try:
-            data = {
-                'current': asdict(self.metrics),
-                'history': [asdict(m) for m in self.metrics_history[-100:]]
-            }
-            
+
             # In real implementation, save to database or file
             # For now, just log
             self.logger.debug(f"Metrics saved: {len(self.metrics_history)} entries")
