@@ -1,0 +1,143 @@
+# Intelligent Stress Testing System Configuration
+
+# Stress Test Configuration
+stress_test:
+  # Test duration in seconds (0 = infinite)
+  duration: 3600
+  
+  # Maximum concurrent users/connections
+  max_concurrent_users: 1000
+  
+  # Ramp-up time in seconds
+  ramp_up_time: 300
+  
+  # Base URL for testing
+  base_url: "http://localhost:8000"
+  
+  # Test interval between cycles (seconds)
+  test_interval: 1
+  
+  # Endpoints to test
+  endpoints:
+    - path: "/api/transactions"
+      method: "POST"
+      weight: 0.6
+    - path: "/api/accounts"
+      method: "GET"
+      weight: 0.3
+    - path: "/api/status"
+      method: "GET"
+      weight: 0.1
+
+# Error Handling Configuration
+error_handling:
+  # Maximum retry attempts
+  max_retries: 5
+  
+  # Base retry delay in seconds
+  retry_delay: 2
+  
+  # Use exponential backoff
+  exponential_backoff: true
+  
+  # Enable automatic recovery
+  auto_recovery: true
+  
+  # Error category definitions
+  error_categories:
+    critical:
+      - "DatabaseConnectionError"
+      - "OutOfMemoryError"
+      - "SystemError"
+    recoverable:
+      - "TimeoutError"
+      - "ConnectionError"
+      - "RateLimitError"
+      - "TemporaryError"
+    ignorable:
+      - "ClientCancellationError"
+      - "NotFoundError"
+  
+  # Auto-fix strategies
+  auto_fix_strategies:
+    - error_type: "DatabaseConnectionError"
+      strategy: "reconnect_with_backoff"
+    - error_type: "RateLimitError"
+      strategy: "rate_limit_backoff"
+    - error_type: "TimeoutError"
+      strategy: "exponential_backoff"
+    - error_type: "ConnectionError"
+      strategy: "reconnect_with_backoff"
+
+# Monitoring Configuration
+monitoring:
+  # Metrics collection interval (seconds)
+  metrics_interval: 10
+  
+  # Metrics aggregation interval (seconds)
+  aggregation_interval: 60
+  
+  # Dashboard port
+  dashboard_port: 8080
+  
+  # Enable alerts
+  enable_alerts: true
+  
+  # Alert thresholds
+  alert_thresholds:
+    error_rate: 10.0  # percentage
+    stress_load: 90.0  # percentage
+  
+  # Storage path for metrics
+  storage_path: "data/metrics.json"
+
+# Network Simulation (optional)
+network:
+  # Enable network simulation
+  enabled: false
+  
+  # Simulated latency in milliseconds
+  latency_ms: 0
+  
+  # Packet loss percentage
+  packet_loss: 0.0
+  
+  # Bandwidth limit in Mbps
+  bandwidth_limit_mbps: 0
+
+# Pull Request Automation
+pr_automation:
+  # GitHub repository owner
+  repo_owner: "PiCoreTeam"
+  
+  # GitHub repository name
+  repo_name: "pi-node-docker"
+  
+  # Base branch for PRs
+  base_branch: "master"
+  
+  # GitHub token (use environment variable)
+  github_token: "${GITHUB_TOKEN}"
+  
+  # Auto-merge approved PRs
+  auto_merge: true
+  
+  # Merge method (merge, squash, rebase)
+  merge_method: "squash"
+
+# Logging Configuration
+logging:
+  # Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+  level: "INFO"
+  
+  # Log file path
+  file: "logs/stress_testing.log"
+  
+  # Log format
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # Maximum log file size in bytes
+  max_bytes: 10485760  # 10MB
+  
+  # Number of backup log files
+  backup_count: 5
