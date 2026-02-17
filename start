@@ -351,17 +351,15 @@ EOF
 }
 
 function run_migrations() {
-	if [ "$ENABLE_AUTO_MIGRATIONS" = "true" ]; then
-		echo "running migrations..."
-		if [ -x "/migrations/migration_runner.sh" ]; then
-			/migrations/migration_runner.sh
-			echo "migrations: completed"
-		else
-			echo "migrations: runner script not found or not executable, skipping"
-		fi
-	else
+	if [ "$ENABLE_AUTO_MIGRATIONS" != "true" ]; then
 		echo "migrations: auto-migrations disabled, skipping"
+		return 0
 	fi
+	# Ensure postgres is running before executing migrations
+	start_postgres
+
+	/migrations/migration_runner.sh
+	echo "migrations: completed"
 }
 
 function exec_supervisor() {
