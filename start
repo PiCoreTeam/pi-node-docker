@@ -70,7 +70,7 @@ function process_args() {
 	fi
 
 	export NETWORK_PASSPHRASE="Pi Network"
-	export HISTORY_ARCHIVE_URLS="https://history.mainnet.minepi.com"
+	export HISTORY_ARCHIVE_URLS="http://localhost:1570,https://history.mainnet.minepi.com"
 
 	# Always run in persistent mode
 	STELLAR_MODE="persistent"
@@ -249,6 +249,9 @@ function init_horizon() {
 			-e "s/__NETWORK__/$NETWORK_PASSPHRASE/g" \
 			-e "s=__ARCHIVE__=$HISTORY_ARCHIVE_URLS=g" \
 			etc/horizon.env
+
+		# Create captive core data directory
+		mkdir -p captive-data
 
 		start_postgres
 		run_silent "init-horizon-db" sudo -u stellar ./bin/horizon db init
