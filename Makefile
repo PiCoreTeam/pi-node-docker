@@ -1,7 +1,4 @@
-__PHONY__: build build-testing
+__PHONY__: build
 
 build:
-	docker build --platform linux/amd64 -t pinetwork/pi-node-docker:mainnet_relay-v1.0-p19.6 -f Dockerfile .
-
-build-testing:
-	docker build --platform linux/amd64 -t stellar/quickstart:testing -f Dockerfile.testing
+	docker build --platform linux/amd64 -t pinetwork/pi-node-docker:mainnet_relay-v1.1-p19.6 -f Dockerfile .
