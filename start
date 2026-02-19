@@ -282,6 +282,10 @@ function init_horizon() {
 		touch .quickstart-initialized
 	fi
 
+	# Ensure captive-data directory exists with correct ownership (Horizon runs as stellar)
+	mkdir -p "$HZHOME/captive-data"
+	chown stellar:stellar "$HZHOME/captive-data"
+
 	# Verify APPLY_MIGRATIONS=true is present in horizon.env, add if missing
 	if ! grep -q "^export APPLY_MIGRATIONS=true" etc/horizon.env; then
 		echo "export APPLY_MIGRATIONS=true" >> etc/horizon.env

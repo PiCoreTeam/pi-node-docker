@@ -211,6 +211,7 @@ if [[ ! -d "$CAPTIVE_DATA_DIR" ]]; then
 else
     log "Captive data directory already exists (skipped)"
 fi
+chown stellar:stellar "$CAPTIVE_DATA_DIR"
 
 # ------------------------------------------------------------------------------
 # Step 8: Restart services (only if supervisor is running)
