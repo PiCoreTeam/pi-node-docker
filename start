@@ -160,6 +160,7 @@ function copy_defaults() {
 		echo "horizon: config directory exists, skipping copy"
 	else
 		$CP /opt/stellar-default/common/horizon/ $HZHOME
+		$CP /opt/stellar-default/$NETWORK/horizon/ $HZHOME
 	fi
 }
 
