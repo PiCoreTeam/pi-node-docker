@@ -22,8 +22,6 @@ RUN ["ln", "-s", "/opt/stellar/core/etc/stellar-core.cfg", "/stellar-core.cfg"]
 RUN ["ln", "-s", "/opt/stellar/horizon/etc/horizon.env", "/horizon.env"]
 ADD common /opt/stellar-default/common
 ADD pubnet /opt/stellar-default/pubnet
-ADD testnet /opt/stellar-default/testnet
-ADD testnet2 /opt/stellar-default/testnet2
 
 ADD mirror_full_archive.sh /
 ADD horizon_complete_reingest.sh /

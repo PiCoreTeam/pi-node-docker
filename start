@@ -52,12 +52,6 @@ function process_args() {
 
 
 	  case "${ARG}" in
-	  --testnet)
-	    NETWORK="testnet"
-	    ;;
-	  --testnet2)
-	    NETWORK="testnet2"
-	    ;;
 	  --mainnet)
 	    NETWORK="pubnet"
 	    ;;
@@ -74,21 +68,12 @@ function process_args() {
 	  esac
 	done
 
-	# Default to testnet if no network specified
+	# Default to mainnet if no network specified
 	if [ -z "$NETWORK" ]; then
-		NETWORK="testnet"
+		NETWORK="pubnet"
 	fi
 
 	case "$NETWORK" in
-	testnet)
-    export NETWORK_PASSPHRASE="Pi Testnet"
-    export HISTORY_ARCHIVE_URLS="http://testnet-history.minepi.com:31403/"
-    ;;
-  	testnet2)
-      export NETWORK_PASSPHRASE="Pi Testnet"
-      # h1570ry - we'll start a webserver connected to history directory later on
-      export HISTORY_ARCHIVE_URLS="http://localhost:1570"
-      ;;
 	pubnet)
     export NETWORK_PASSPHRASE="Pi Network"
     # Local history + CDN fallback for captive core
