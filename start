@@ -52,12 +52,6 @@ function process_args() {
 
 
 	  case "${ARG}" in
-	  --testnet)
-	    NETWORK="testnet"
-	    ;;
-	  --testnet2)
-	    NETWORK="testnet2"
-	    ;;
 	  --mainnet)
 	    NETWORK="pubnet"
 	    ;;
@@ -74,25 +68,16 @@ function process_args() {
 	  esac
 	done
 
-	# Default to testnet if no network specified
+	# Default to mainnet if no network specified
 	if [ -z "$NETWORK" ]; then
-		NETWORK="testnet"
+		NETWORK="pubnet"
 	fi
 
 	case "$NETWORK" in
-	testnet)
-    export NETWORK_PASSPHRASE="Pi Testnet"
-    export HISTORY_ARCHIVE_URLS="http://testnet-history.minepi.com:31403/"
-    ;;
-  	testnet2)
-      export NETWORK_PASSPHRASE="Pi Testnet"
-      # h1570ry - we'll start a webserver connected to history directory later on
-      export HISTORY_ARCHIVE_URLS="http://localhost:1570"
-      ;;
 	pubnet)
     export NETWORK_PASSPHRASE="Pi Network"
-     # h1570ry - we'll start a webserver connected to history directory later on
-    export HISTORY_ARCHIVE_URLS="http://localhost:1570"
+    # Local history + CDN fallback for captive core
+    export HISTORY_ARCHIVE_URLS="http://localhost:1570,https://history.mainnet.minepi.com"
     ;;
 	*)
 		echo "Unknown network: '$NETWORK'" >&2
@@ -160,6 +145,7 @@ function copy_defaults() {
 		echo "horizon: config directory exists, skipping copy"
 	else
 		$CP /opt/stellar-default/common/horizon/ $HZHOME
+		$CP /opt/stellar-default/$NETWORK/horizon/ $HZHOME
 	fi
 }
 
@@ -282,6 +268,10 @@ function init_horizon() {
 		touch .quickstart-initialized
 	fi
 
+	# Ensure captive-data directory exists with correct ownership (Horizon runs as stellar)
+	mkdir -p "$HZHOME/captive-data"
+	chown stellar:stellar "$HZHOME/captive-data"
+
 	# Verify APPLY_MIGRATIONS=true is present in horizon.env, add if missing
 	if ! grep -q "^export APPLY_MIGRATIONS=true" etc/horizon.env; then
 		echo "export APPLY_MIGRATIONS=true" >> etc/horizon.env
@@ -337,6 +327,10 @@ function start_postgres() {
 	if [ ! -z "$CURRENT_POSTGRES_PID" ]; then
 		return 0
 	fi
+
+	# Clean up stale files from previous unclean shutdowns to prevent PID-collision race.
+	rm -f "$PGDATA/postmaster.pid"
+	rm -f /var/run/postgresql/.s.PGSQL.5432 /var/run/postgresql/.s.PGSQL.5432.lock
 
 	sudo -u postgres $PGBIN/postgres -D $PGDATA -c config_file=$PGHOME/etc/postgresql.conf &> /dev/null &
 	CURRENT_POSTGRES_PID=$!
