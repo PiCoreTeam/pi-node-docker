@@ -328,6 +328,10 @@ function start_postgres() {
 		return 0
 	fi
 
+	# Clean up stale files from previous unclean shutdowns to prevent PID-collision race.
+	rm -f "$PGDATA/postmaster.pid"
+	rm -f /var/run/postgresql/.s.PGSQL.5432 /var/run/postgresql/.s.PGSQL.5432.lock
+
 	sudo -u postgres $PGBIN/postgres -D $PGDATA -c config_file=$PGHOME/etc/postgresql.conf &> /dev/null &
 	CURRENT_POSTGRES_PID=$!
 
