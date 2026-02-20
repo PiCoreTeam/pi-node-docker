@@ -10,7 +10,7 @@ The image uses the following software:
 
 - **PostgreSQL 12** - for storing both stellar-core and horizon data
 - **stellar-core** 19.9.0
-- **horizon** 2.25.0
+- **horizon** 2.30.0
 - **Supervisord** - for managing the processes of the services above
 - **stellar-archivist** - for managing history archives(optional scripts)
 

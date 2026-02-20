@@ -17,9 +17,10 @@ Changes:
 4. Adds captive core env vars (binary path, storage path, config path, HTTP port)
 5. Creates `stellar-core-captive.yml` config
 6. Creates `captive-data` directory
-7. Restarts Horizon
+7. Sets ownership of `captive-data` directory to `stellar:stellar`
+8. Restarts Horizon (only if supervisorctl is available)
 
-**New containers (v1.0-p19.10+)** already have captive core configured - no migration needed.
+**New containers (v1.0-p19.9+)** already have captive core configured - no migration needed.
 
 ---
 
@@ -45,16 +46,17 @@ Changes:
 
 **Expected output:**
 ```
-[002] [INFO]  Starting migration: Enable Captive Core
-[002] [INFO]  Running on mainnet (Pi Network)
-[002] [INFO]  Backup created: /opt/stellar/migration_backups/horizon.env.YYYYMMDD_HHMMSS
-[002] [OK]    STELLAR_CORE_DATABASE_URL removed
-[002] [OK]    STELLAR_CORE_URL removed
-[002] [OK]    ENABLE_CAPTIVE_CORE_INGESTION set to true
-[002] [OK]    HISTORY_ARCHIVE_URLS updated with local + CDN fallback
-[002] [OK]    STELLAR_CORE_BINARY_PATH added
+YYYY-MM-DD HH:MM:SS [002] [INFO]  Starting migration: Enable Captive Core
+YYYY-MM-DD HH:MM:SS [002] [INFO]  Running on mainnet (Pi Network)
+YYYY-MM-DD HH:MM:SS [002] [INFO]  Backup created: /opt/stellar/migration_backups/horizon.env.YYYYMMDD_HHMMSS
+YYYY-MM-DD HH:MM:SS [002] [OK]    STELLAR_CORE_DATABASE_URL removed
+YYYY-MM-DD HH:MM:SS [002] [OK]    STELLAR_CORE_URL removed
+YYYY-MM-DD HH:MM:SS [002] [OK]    ENABLE_CAPTIVE_CORE_INGESTION set to true
+YYYY-MM-DD HH:MM:SS [002] [OK]    HISTORY_ARCHIVE_URLS updated with local + CDN fallback
+YYYY-MM-DD HH:MM:SS [002] [OK]    STELLAR_CORE_BINARY_PATH added
 ...
-[002] [OK]    Migration completed successfully
+YYYY-MM-DD HH:MM:SS [002] [OK]    Verification passed
+YYYY-MM-DD HH:MM:SS [002] [OK]    Migration completed successfully
 ```
 
 ---
