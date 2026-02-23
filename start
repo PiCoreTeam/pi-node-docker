@@ -250,14 +250,15 @@ function init_horizon() {
 			-e "s=__ARCHIVE__=$HISTORY_ARCHIVE_URLS=g" \
 			etc/horizon.env
 
-		# Create captive core data directory
-		mkdir -p captive-data
-
 		start_postgres
 		run_silent "init-horizon-db" sudo -u stellar ./bin/horizon db init
 
 		touch .quickstart-initialized
 	fi
+
+	# Ensure captive-data directory exists with correct ownership (Horizon runs as stellar)
+	mkdir -p "$HZHOME/captive-data"
+	chown stellar:stellar "$HZHOME/captive-data"
 
 	popd
 }
@@ -305,6 +306,10 @@ function start_postgres() {
 	if [ ! -z "$CURRENT_POSTGRES_PID" ]; then
 		return 0
 	fi
+
+	# Clean up stale files from previous unclean shutdowns to prevent PID-collision race.
+	rm -f "$PGDATA/postmaster.pid"
+	rm -f /var/run/postgresql/.s.PGSQL.5432 /var/run/postgresql/.s.PGSQL.5432.lock
 
 	sudo -u postgres $PGBIN/postgres -D $PGDATA -c config_file=$PGHOME/etc/postgresql.conf &> /dev/null &
 	CURRENT_POSTGRES_PID=$!
