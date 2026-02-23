@@ -32,6 +32,9 @@ RUN ["chmod", "+x", "/horizon_complete_reingest.sh"]
 ADD migrations /migrations
 RUN chmod +x /migrations/*.sh
 
+ARG ENABLE_AUTO_MIGRATIONS=false
+ENV ENABLE_AUTO_MIGRATIONS=${ENABLE_AUTO_MIGRATIONS}
+
 ADD start /
 RUN ["chmod", "+x", "start"]
 
