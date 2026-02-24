@@ -9,7 +9,7 @@ This image runs in **persistent mode**, storing all data and configuration on a 
 The image uses the following software:
 
 - **PostgreSQL 12** - for storing both stellar-core and horizon data
-- **stellar-core** 19.9.0
+- **stellar-core** 20.2.0
 - **horizon** 2.30.0
 - **Supervisord** - for managing the processes of the services above
 - **stellar-archivist** - for managing history archives(optional scripts)
@@ -31,7 +31,7 @@ The software listens on several ports. At minimum, expose the horizon HTTP port 
 You **must** mount a host directory to `/opt/stellar` to store persistent data:
 
 ```shell
-$ docker run --rm -it -p "31401:8000" -v "/path/to/data:/opt/stellar" --name pi-node pinetwork/pi-node-docker:organization_mainnet-v1.0-p19.9 --mainnet
+$ docker run --rm -it -p "31401:8000" -v "/path/to/data:/opt/stellar" --name pi-node pinetwork/pi-node-docker:organization_mainnet-v1.0-p20.2 --mainnet
 ```
 
 The `-v` option mounts the host directory into the container at `/opt/stellar`. Use an absolute path and keep it consistent across container restarts.
@@ -112,7 +112,7 @@ $ docker run -d \
     -v "/path/to/data:/opt/stellar" \
     -p "31401:8000" \
     --name pi-node \
-    pinetwork/pi-node-docker:organization_mainnet-v1.0-p19.9 --mainnet --enable-auto-migrations
+    pinetwork/pi-node-docker:organization_mainnet-v1.0-p20.2 --mainnet --enable-auto-migrations
 ```
 
 ### Running Migrations Manually
@@ -212,7 +212,7 @@ $ docker run -it --rm \
     -p "31402:31402" \
     -p "31403:1570" \
     --name pi-node \
-    pinetwork/pi-node-docker:organization_mainnet-v1.0-p19.9 --mainnet
+    pinetwork/pi-node-docker:organization_mainnet-v1.0-p20.2 --mainnet
 ```
 
 **Start a mainnet node in the background (after initialization):**
@@ -223,7 +223,7 @@ $ docker run -d \
     -p "31402:31402" \
     -p "31403:1570" \
     --name pi-node \
-    pinetwork/pi-node-docker:organization_mainnet-v1.0-p19.9 --mainnet
+    pinetwork/pi-node-docker:organization_mainnet-v1.0-p20.2 --mainnet
 ```
 
 **Start with pre-set PostgreSQL password (non-interactive):**
@@ -235,7 +235,7 @@ $ docker run -d \
     -p "31403:1570" \
     -e POSTGRES_PASSWORD=your_secure_password \
     --name pi-node \
-    pinetwork/pi-node-docker:organization_mainnet-v1.0-p19.9 --mainnet
+    pinetwork/pi-node-docker:organization_mainnet-v1.0-p20.2 --mainnet
 ```
 
 ## Docker Compose
@@ -247,7 +247,7 @@ name: pi-node
 
 services:
   mainnet:
-    image: pinetwork/pi-node-docker:organization_mainnet-v1.0-p19.9
+    image: pinetwork/pi-node-docker:organization_mainnet-v1.0-p20.2
     container_name: mainnet
     env_file:
       - ./.env
@@ -281,7 +281,7 @@ $ docker compose up -d mainnet
 $ make build
 ```
 
-This builds the image as `pinetwork/pi-node-docker:organization_mainnet-v1.0-p19.9`.
+This builds the image as `pinetwork/pi-node-docker:organization_mainnet-v1.0-p20.2`.
 
 ## Troubleshooting
 
