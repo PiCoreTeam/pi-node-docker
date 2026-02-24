@@ -7,7 +7,7 @@ This image runs in **persistent mode only** — all data and configuration is st
 ## Software Versions
 
 - **PostgreSQL 12** — stores both stellar-core and horizon data
-- **stellar-core 19.9** — Pi Network consensus node
+- **stellar-core 20.2** — Pi Network consensus node
 - **horizon 2.30** — Stellar Horizon API server (captive-core mode)
 - **Supervisord** — process manager
 - **webfsd** — serves local history archive (mainnet only, port 1570)
@@ -32,7 +32,7 @@ $ docker run --rm -it \
     -p "31402:31402" \
     -v "/path/to/data:/opt/stellar" \
     --name pi-node \
-    pinetwork/pi-node-docker:community-v1.0-p19.9 --mainnet
+    pinetwork/pi-node-docker:community-v1.0-p20.2 --mainnet
 ```
 
 Use a consistent absolute path across restarts. The second portion (`/opt/stellar`) must not change.
@@ -122,7 +122,7 @@ $ docker run --rm -it \
     -v "/opt/pi-node:/opt/stellar" \
     -e POSTGRES_PASSWORD=yourpassword \
     --name pi-node \
-    pinetwork/pi-node-docker:community-v1.0-p19.9 --mainnet
+    pinetwork/pi-node-docker:community-v1.0-p20.2 --mainnet
 ```
 
 *Mainnet node (background, after initialization):*
@@ -133,7 +133,7 @@ $ docker run -d \
     -v "/opt/pi-node:/opt/stellar" \
     -e POSTGRES_PASSWORD=yourpassword \
     --name pi-node \
-    pinetwork/pi-node-docker:community-v1.0-p19.9 --mainnet
+    pinetwork/pi-node-docker:community-v1.0-p20.2 --mainnet
 ```
 
 *Testnet node:*
@@ -143,7 +143,7 @@ $ docker run -d \
     -v "/opt/pi-testnet:/opt/stellar" \
     -e POSTGRES_PASSWORD=yourpassword \
     --name pi-testnet \
-    pinetwork/pi-node-docker:community-v1.0-p19.9 --testnet
+    pinetwork/pi-node-docker:community-v1.0-p20.2 --testnet
 ```
 
 ## Viewing Logs
