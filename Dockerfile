@@ -1,7 +1,10 @@
-FROM ubuntu:20.04
+ARG STELLAR_CORE_IMAGE_REF
+ARG HORIZON_IMAGE_REF
 
-ENV STELLAR_CORE_VERSION=21.2.0-1953.d78f48eac.focal
-ENV HORIZON_VERSION=2.32.0-461
+FROM $STELLAR_CORE_IMAGE_REF AS stellar-core
+FROM $HORIZON_IMAGE_REF AS horizon
+
+FROM ubuntu:20.04
 
 EXPOSE 5432
 EXPOSE 8000
@@ -11,9 +14,10 @@ ADD dependencies /
 RUN ["chmod", "+x", "dependencies"]
 RUN /dependencies
 
-ADD install /
-RUN ["chmod", "+x", "install"]
-RUN /install
+COPY --from=stellar-core /usr/local/bin/stellar-core /usr/bin/stellar-core
+COPY --from=horizon /go/bin/horizon /usr/bin/stellar-horizon
+
+RUN adduser --system --group --quiet --home /var/lib/stellar --disabled-password --shell /bin/bash stellar
 
 RUN ["mkdir", "-p", "/opt/stellar"]
 
