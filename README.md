@@ -31,7 +31,7 @@ The software listens on several ports. At minimum, expose the horizon HTTP port 
 You **must** mount a host directory to `/opt/stellar` to store persistent data:
 
 ```shell
-$ docker run --rm -it -p "31401:8000" -v "/path/to/data:/opt/stellar" --name pi-node pinetwork/pi-node-docker:organization_mainnet-v1.0-p20.2 --mainnet
+$ docker run --rm -it -p "31401:8000" -v "/path/to/data:/opt/stellar" --name pi-node pinetwork/pi-node-docker:organization_mainnet-v1.0-p21.2-RC1 --mainnet
 ```
 
 The `-v` option mounts the host directory into the container at `/opt/stellar`. Use an absolute path and keep it consistent across container restarts.
@@ -80,8 +80,8 @@ Stop the container before editing configuration files, then restart after change
 
 | Option                     | Description                               |
 |----------------------------|-------------------------------------------|
-| `--mainnet`                | Connect to Pi Network mainnet             |
-| `--enable-auto-migrations` | Run database/config migrations on startup |
+| `--mainnet`                  | Connect to Pi Network mainnet                      |
+| `--disable-auto-migrations`  | Disable automatic migrations on startup            |
 
 ## Environment Variables
 
@@ -92,7 +92,7 @@ Stop the container before editing configuration files, then restart after change
 
 ## Migrations
 
-The container includes migration scripts that update database schemas, modify deprecated configuration parameters, and apply other necessary changes when upgrading to newer versions. Migrations run automatically on startup when enabled with `--enable-auto-migrations`.
+The container includes migration scripts that update database schemas, modify deprecated configuration parameters, and apply other necessary changes when upgrading to newer versions. Migrations run automatically on startup by default.
 
 ### How It Works
 
@@ -103,16 +103,16 @@ The container includes migration scripts that update database schemas, modify de
 - Failed migrations will re-run on next startup
 - Backups are created in `/opt/stellar/migration_backups/` before changes
 
-### Enabling Migrations
+### Disabling Migrations
 
-Add `--enable-auto-migrations` to your container command:
+To opt out of automatic migrations, pass `--disable-auto-migrations`:
 
 ```shell
 $ docker run -d \
     -v "/path/to/data:/opt/stellar" \
     -p "31401:8000" \
     --name pi-node \
-    pinetwork/pi-node-docker:organization_mainnet-v1.0-p20.2 --mainnet --enable-auto-migrations
+    pinetwork/pi-node-docker:organization_mainnet-v1.0-p21.2-RC1 --mainnet --disable-auto-migrations
 ```
 
 ### Running Migrations Manually
@@ -212,7 +212,7 @@ $ docker run -it --rm \
     -p "31402:31402" \
     -p "31403:1570" \
     --name pi-node \
-    pinetwork/pi-node-docker:organization_mainnet-v1.0-p20.2 --mainnet
+    pinetwork/pi-node-docker:organization_mainnet-v1.0-p21.2-RC1 --mainnet
 ```
 
 **Start a mainnet node in the background (after initialization):**
@@ -223,7 +223,7 @@ $ docker run -d \
     -p "31402:31402" \
     -p "31403:1570" \
     --name pi-node \
-    pinetwork/pi-node-docker:organization_mainnet-v1.0-p20.2 --mainnet
+    pinetwork/pi-node-docker:organization_mainnet-v1.0-p21.2-RC1 --mainnet
 ```
 
 **Start with pre-set PostgreSQL password (non-interactive):**
@@ -235,7 +235,7 @@ $ docker run -d \
     -p "31403:1570" \
     -e POSTGRES_PASSWORD=your_secure_password \
     --name pi-node \
-    pinetwork/pi-node-docker:organization_mainnet-v1.0-p20.2 --mainnet
+    pinetwork/pi-node-docker:organization_mainnet-v1.0-p21.2-RC1 --mainnet
 ```
 
 ## Docker Compose
@@ -247,7 +247,7 @@ name: pi-node
 
 services:
   mainnet:
-    image: pinetwork/pi-node-docker:organization_mainnet-v1.0-p20.2
+    image: pinetwork/pi-node-docker:organization_mainnet-v1.0-p21.2-RC1
     container_name: mainnet
     env_file:
       - ./.env
@@ -259,7 +259,7 @@ services:
       - "31401:8000"
       - "31402:31402"
       - "31403:1570"
-    command: ["--mainnet --enable-auto-migrations"]
+    command: ["--mainnet"]
 ```
 
 Create a `.env` file with your configuration:
@@ -281,7 +281,7 @@ $ docker compose up -d mainnet
 $ make build
 ```
 
-This builds the image as `pinetwork/pi-node-docker:organization_mainnet-v1.0-p20.2`.
+This builds the image as `pinetwork/pi-node-docker:organization_mainnet-v1.0-p21.2-RC1`.
 
 ## Troubleshooting
 
