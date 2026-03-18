@@ -17,7 +17,7 @@ export PGPORT=5432
 
 QUICKSTART_INITIALIZED=false
 CURRENT_POSTGRES_PID=""
-ENABLE_AUTO_MIGRATIONS=${ENABLE_AUTO_MIGRATIONS:-false}
+ENABLE_AUTO_MIGRATIONS=${ENABLE_AUTO_MIGRATIONS:-true}
 
 function main() {
 	echo ""
@@ -61,6 +61,9 @@ function process_args() {
       ;;
     --enable-auto-migrations)
       ENABLE_AUTO_MIGRATIONS=true
+      ;;
+    --disable-auto-migrations)
+      ENABLE_AUTO_MIGRATIONS=false
       ;;
 	  *)
 	    echo "Unknown container arg $ARG" >&2
