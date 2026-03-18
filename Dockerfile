@@ -1,7 +1,10 @@
-FROM ubuntu:20.04
+ARG STELLAR_CORE_IMAGE_REF
+ARG HORIZON_IMAGE_REF
 
-ENV STELLAR_CORE_VERSION 20.2.0-1720.34d82fc00.focal
-ENV HORIZON_VERSION 2.30.0-436
+FROM $STELLAR_CORE_IMAGE_REF AS stellar-core
+FROM $HORIZON_IMAGE_REF AS horizon
+
+FROM ubuntu:20.04
 
 EXPOSE 5432
 EXPOSE 8000
@@ -10,6 +13,11 @@ EXPOSE 31402
 ADD dependencies /
 RUN ["chmod", "+x", "dependencies"]
 RUN /dependencies
+
+COPY --from=stellar-core /usr/local/bin/stellar-core /usr/bin/stellar-core
+COPY --from=horizon /go/bin/horizon /usr/bin/stellar-horizon
+
+RUN adduser --system --group --quiet --home /var/lib/stellar --disabled-password --shell /bin/bash stellar
 
 ADD install /
 RUN ["chmod", "+x", "install"]
@@ -32,7 +40,7 @@ RUN ["chmod", "+x", "/horizon_complete_reingest.sh"]
 ADD migrations /migrations
 RUN chmod +x /migrations/*.sh
 
-ARG ENABLE_AUTO_MIGRATIONS=false
+ARG ENABLE_AUTO_MIGRATIONS=true
 ENV ENABLE_AUTO_MIGRATIONS=${ENABLE_AUTO_MIGRATIONS}
 
 ADD start /
