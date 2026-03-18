@@ -6,8 +6,6 @@ wget -qO - https://apt.stellar.org/SDF.asc | apt-key add -
 echo "deb https://apt.stellar.org focal stable" >/etc/apt/sources.list.d/SDF.list
 echo "deb https://apt.stellar.org focal unstable" >/etc/apt/sources.list.d/SDF-unstable.list
 apt-get update
-apt-get install -y stellar-core=${STELLAR_CORE_VERSION}
-apt-get install -y stellar-horizon=${HORIZON_VERSION}
 apt-get install -y stellar-archivist
 apt-get clean
-echo "\nDone installing stellar-core, horizon, and stellar-archivist\n"
+echo "\nDone installing stellar-archivist\n"
