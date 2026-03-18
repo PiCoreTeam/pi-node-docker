@@ -1,0 +1,40 @@
+FROM ubuntu:focal AS buildstage
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get -y install iproute2 procps lsb-release \
+                       git build-essential pkg-config autoconf automake libtool \
+                       bison flex sed perl libpq-dev parallel libunwind-dev \
+                       clang-12 libc++abi-12-dev libc++-12-dev \
+                       postgresql curl
+
+ARG REF
+ARG CC=clang-12
+ARG CXX=clang++-12
+ARG CFLAGS='-O3 -g1 -fno-omit-frame-pointer'
+ARG CXXFLAGS='-O3 -g1 -fno-omit-frame-pointer -stdlib=libc++'
+ARG CONFIGURE_FLAGS='--disable-tests'
+
+RUN git clone --branch ${REF} https://github.com/stellar/stellar-core.git
+WORKDIR stellar-core
+RUN git submodule update --init --recursive
+
+RUN ./autogen.sh
+RUN ./install-rust.sh
+ENV PATH "/root/.cargo/bin:$PATH"
+
+RUN ./configure CC="${CC}" CXX="${CXX}" CFLAGS="${CFLAGS}" CXXFLAGS="${CXXFLAGS}" ${CONFIGURE_FLAGS}
+
+RUN sh -c 'make -j $(nproc)'
+RUN make install
+
+# Deploy stage — only runtime deps
+FROM ubuntu:focal
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get -y install libunwind8 postgresql curl sqlite iproute2 libc++abi1-12 libc++1-12
+
+COPY --from=buildstage /usr/local/bin/stellar-core /usr/local/bin/stellar-core
+EXPOSE 11625
+EXPOSE 11626
+CMD stellar-core

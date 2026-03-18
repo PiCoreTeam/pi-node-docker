@@ -1,12 +1,3 @@
-set -e
-
-export DEBIAN_FRONTEND=noninteractive
-apt-get -y install gnupg1 rsync wget webfs
-wget -qO - https://apt.stellar.org/SDF.asc | apt-key add -
-echo "deb https://apt.stellar.org focal stable" >/etc/apt/sources.list.d/SDF.list
-echo "deb https://apt.stellar.org focal unstable" >/etc/apt/sources.list.d/SDF-unstable.list
-apt-get update
-apt-get install -y stellar-core=${STELLAR_CORE_VERSION}
-apt-get install -y stellar-horizon=${HORIZON_VERSION}
-apt-get clean
-echo "\nDone installing stellar-core and horizon\n"
+# stellar-core and horizon are now built from source and copied in via
+# multi-stage Docker build (see Dockerfile + Makefile build-deps targets).
+# This script is intentionally left empty.

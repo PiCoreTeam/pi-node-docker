@@ -8,7 +8,8 @@ apt-get install -y curl wget git apt-transport-https \
                    libpq-dev libsqlite3-dev libsasl2-dev \
                    postgresql-client postgresql postgresql-contrib \
                    sudo vim zlib1g-dev supervisor psmisc \
-                   jq netcat # Parsing stellar-core JSON and checking core HTTP server
+                   rsync jq netcat webfs \
+                   libunwind8 sqlite3 libc++abi1-12 libc++1-12 # stellar-core runtime deps
 apt-get clean
 
 echo "\nDone installing dependencies...\n"
