@@ -6,8 +6,13 @@
 /migrations/
 ├── migration_runner.sh       # Main control script
 ├── 001_enable_horizon_auto_migrations.sh  # Enable Horizon auto-migrations
+├── 001_update_validator3.sh               # Update validator3 address
+├── 002_captive_core_migration.sh          # Enable Captive Core for Horizon
+├── 003_deprecated_sql_ledger_state.sh     # Add DEPRECATED_SQL_LEDGER_STATE=false
 ├── docs/                                  # Human-readable migration guides
-│   └── 001_enable_horizon_auto_migrations.md
+│   ├── 001_enable_horizon_auto_migrations.md
+│   ├── 002_captive_core_migration.md
+│   └── 003_deprecated_sql_ledger_state.md
 └── README.md                 # This file
 
 /opt/stellar/                 # Persisted volume
