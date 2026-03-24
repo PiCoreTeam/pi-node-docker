@@ -5,9 +5,6 @@ WORKDIR /go/src/github.com/stellar/go
 RUN git clone https://github.com/stellar/go /go/src/github.com/stellar/go
 RUN git fetch origin ${REF}
 RUN git checkout ${REF}
-RUN COMMIT=$(git rev-parse HEAD) && \
-    VERSION=${REF#horizon-v} && \
-    CGO_ENABLED=0 go install \
-    -ldflags="-X github.com/stellar/go/support/app.version=${VERSION}-${COMMIT}" \
-    github.com/stellar/go/services/horizon
-
+ENV CGO_ENABLED=0
+ENV GOFLAGS="-ldflags=-X=github.com/stellar/go/support/app.version=${REF}-(built-from-source)"
+RUN go install github.com/stellar/go/services/horizon
