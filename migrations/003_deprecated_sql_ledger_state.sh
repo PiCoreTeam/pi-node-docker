@@ -35,10 +35,10 @@ log "Backup created: $BACKUP"
 # ==============================================================================
 # Step 1: Add DEPRECATED_SQL_LEDGER_STATE=false after the DATABASE line
 # ==============================================================================
-if grep -q "^DEPRECATED_SQL_LEDGER_STATE=" "$CORE_CFG"; then
+if grep -qE "^DEPRECATED_SQL_LEDGER_STATE\s*=" "$CORE_CFG"; then
     log "DEPRECATED_SQL_LEDGER_STATE already present (skipped)"
 else
-    sed -i '/^DATABASE=/a DEPRECATED_SQL_LEDGER_STATE=false' "$CORE_CFG"
+    sed -i '/^DATABASE\s*=/a DEPRECATED_SQL_LEDGER_STATE=false' "$CORE_CFG"
     ok "DEPRECATED_SQL_LEDGER_STATE=false added after DATABASE line"
 fi
 
@@ -46,7 +46,7 @@ fi
 # Verification
 # ==============================================================================
 log "Verifying migration..."
-grep -q "^DEPRECATED_SQL_LEDGER_STATE=" "$CORE_CFG" || die "DEPRECATED_SQL_LEDGER_STATE not found in $CORE_CFG"
+grep -qE "^DEPRECATED_SQL_LEDGER_STATE\s*=" "$CORE_CFG" || die "DEPRECATED_SQL_LEDGER_STATE not found in $CORE_CFG"
 
 ok "Verification passed"
 ok "Migration completed successfully"
