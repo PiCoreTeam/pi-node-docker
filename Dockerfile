@@ -40,6 +40,9 @@ RUN ["chmod", "+x", "/horizon_complete_reingest.sh"]
 ADD migrations /migrations
 RUN chmod +x /migrations/*.sh
 
+ADD node-status/node-status.sh /usr/local/bin/node-status
+RUN ["chmod", "+x", "/usr/local/bin/node-status"]
+
 ARG ENABLE_AUTO_MIGRATIONS=true
 ENV ENABLE_AUTO_MIGRATIONS=${ENABLE_AUTO_MIGRATIONS}
 

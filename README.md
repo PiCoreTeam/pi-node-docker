@@ -31,7 +31,7 @@ The software listens on several ports. At minimum, expose the horizon HTTP port 
 You **must** mount a host directory to `/opt/stellar` to store persistent data:
 
 ```shell
-$ docker run --rm -it -p "31401:8000" -v "/path/to/data:/opt/stellar" --name pi-node pinetwork/pi-node-docker:organization-mainnet-v1.0-p21.2-RC2 --mainnet
+$ docker run --rm -it -p "31401:8000" -v "/path/to/data:/opt/stellar" --name pi-node pinetwork/pi-node-docker:organization-mainnet-v1.1-p21.2-RC1 --mainnet
 ```
 
 The `-v` option mounts the host directory into the container at `/opt/stellar`. Use an absolute path and keep it consistent across container restarts.
@@ -112,7 +112,7 @@ $ docker run -d \
     -v "/path/to/data:/opt/stellar" \
     -p "31401:8000" \
     --name pi-node \
-    pinetwork/pi-node-docker:organization-mainnet-v1.0-p21.2-RC2 --mainnet --disable-auto-migrations
+    pinetwork/pi-node-docker:organization-mainnet-v1.1-p21.2-RC1 --mainnet --disable-auto-migrations
 ```
 
 ### Running Migrations Manually
@@ -212,7 +212,7 @@ $ docker run -it --rm \
     -p "31402:31402" \
     -p "31403:1570" \
     --name pi-node \
-    pinetwork/pi-node-docker:organization-mainnet-v1.0-p21.2-RC2 --mainnet
+    pinetwork/pi-node-docker:organization-mainnet-v1.1-p21.2-RC1 --mainnet
 ```
 
 **Start a mainnet node in the background (after initialization):**
@@ -223,7 +223,7 @@ $ docker run -d \
     -p "31402:31402" \
     -p "31403:1570" \
     --name pi-node \
-    pinetwork/pi-node-docker:organization-mainnet-v1.0-p21.2-RC2 --mainnet
+    pinetwork/pi-node-docker:organization-mainnet-v1.1-p21.2-RC1 --mainnet
 ```
 
 **Start with pre-set PostgreSQL password (non-interactive):**
@@ -235,7 +235,7 @@ $ docker run -d \
     -p "31403:1570" \
     -e POSTGRES_PASSWORD=your_secure_password \
     --name pi-node \
-    pinetwork/pi-node-docker:organization-mainnet-v1.0-p21.2-RC2 --mainnet
+    pinetwork/pi-node-docker:organization-mainnet-v1.1-p21.2-RC1 --mainnet
 ```
 
 ## Docker Compose
@@ -247,7 +247,7 @@ name: pi-node
 
 services:
   mainnet:
-    image: pinetwork/pi-node-docker:organization-mainnet-v1.0-p21.2-RC2
+    image: pinetwork/pi-node-docker:organization-mainnet-v1.1-p21.2-RC1
     container_name: mainnet
     env_file:
       - ./.env
@@ -281,7 +281,31 @@ $ docker compose up -d mainnet
 $ make build
 ```
 
-This builds the image as `pinetwork/pi-node-docker:organization-mainnet-v1.0-p21.2-RC2`.
+This builds the image as `pinetwork/pi-node-docker:organization-mainnet-v1.1-p21.2-RC1`.
+
+## Node Status
+
+The image includes a built-in `node-status` command that shows node health at a glance.
+
+```shell
+$ docker exec pi-node node-status
+```
+
+Or with docker-compose:
+
+```shell
+$ docker compose exec mainnet node-status
+```
+
+You can also show specific sections:
+
+```shell
+$ docker exec pi-node node-status --protocol --horizon
+```
+
+Available flags: `--services`, `--protocol`, `--horizon`, `--peers`, `--system`. No flags show all sections.
+
+See [node-status/node-status.md](node-status/node-status.md) for full documentation.
 
 ## Troubleshooting
 

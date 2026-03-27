@@ -1,6 +1,6 @@
 __PHONY__: build build-deps build-deps-core build-deps-horizon
 
-TAG?=organization-mainnet-v1.0-p21.2
+TAG?=organization-mainnet-v1.1-p21.2-RC1
 CORE_REF?=v21.2.0
 CORE_CONFIGURE_FLAGS?=--disable-tests
 HORIZON_REF?=horizon-v2.32.0
