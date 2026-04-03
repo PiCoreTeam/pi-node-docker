@@ -1,14 +1,18 @@
 __PHONY__: build build-deps build-deps-core build-deps-horizon
 
-TAG?=community-v1.1-p21.2
-CORE_REF?=v21.2.0
+TAG?=community-v1.1-p22.1
+CORE_REPO?=https://github.com/stellar/stellar-core.git
+CORE_REF?=v22.1.0
 CORE_CONFIGURE_FLAGS?=--disable-tests
-HORIZON_REF?=horizon-v2.32.0
+HORIZON_REF?=horizon-v22.0.3
 
 build-deps: build-deps-core build-deps-horizon
 
 build-deps-core:
-	docker build --platform linux/amd64 -t stellar-core:$(CORE_REF) -f Dockerfile.core . --build-arg REF="$(CORE_REF)" --build-arg CONFIGURE_FLAGS="$(CORE_CONFIGURE_FLAGS)"
+	docker build --platform linux/amd64 -t stellar-core:$(CORE_REF) -f Dockerfile.core . \
+	  --build-arg REF="$(CORE_REF)" \
+	  --build-arg CORE_REPO="$(CORE_REPO)" \
+	  --build-arg CONFIGURE_FLAGS="$(CORE_CONFIGURE_FLAGS)"
 
 build-deps-horizon:
 	docker build --platform linux/amd64 -t stellar-horizon:$(HORIZON_REF) -f Dockerfile.horizon --target builder . --build-arg REF="$(HORIZON_REF)"
