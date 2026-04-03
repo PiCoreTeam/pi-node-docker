@@ -1,6 +1,6 @@
 __PHONY__: build build-deps build-deps-core build-deps-horizon
 
-TAG?=mainnet-relay-v1.1-p22.1
+TAG?=mainnet-relay-v1.0-p22.1
 CORE_REPO?=https://github.com/stellar/stellar-core.git
 CORE_REF?=v22.1.0
 CORE_CONFIGURE_FLAGS?=--disable-tests
