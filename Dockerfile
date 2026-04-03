@@ -40,6 +40,9 @@ ADD testnet2 /opt/stellar-default/testnet2
 ADD migrations /migrations
 RUN chmod +x /migrations/*.sh
 
+ADD node-status/node-status.sh /usr/local/bin/node-status
+RUN ["chmod", "+x", "/usr/local/bin/node-status"]
+
 ADD start /
 RUN ["chmod", "+x", "start"]
 
