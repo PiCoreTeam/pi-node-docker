@@ -6,7 +6,7 @@ FROM $STELLAR_CORE_IMAGE_REF AS stellar-core
 FROM $HORIZON_IMAGE_REF AS horizon
 FROM $STELLAR_RPC_IMAGE_REF AS stellar-rpc
 
-FROM ubuntu:20.04
+FROM ubuntu:24.04
 
 EXPOSE 5432
 EXPOSE 6061
@@ -23,7 +23,7 @@ COPY --from=stellar-core /usr/local/bin/stellar-core /usr/bin/stellar-core
 COPY --from=horizon /go/bin/horizon /usr/bin/stellar-horizon
 COPY --from=stellar-rpc /usr/local/bin/stellar-rpc /usr/bin/stellar-rpc
 
-RUN adduser --system --group --quiet --home /var/lib/stellar --disabled-password --shell /bin/bash stellar
+RUN adduser --system --group --quiet --uid 999 --home /var/lib/stellar --disabled-password --shell /bin/bash stellar
 
 RUN ["mkdir", "-p", "/opt/stellar"]
 
