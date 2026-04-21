@@ -98,7 +98,7 @@ accessing admin endpoints from a trusted network.
 ## Process Management (Supervisord)
 
 Services are managed by supervisord. Only **postgres** and **stellar-core**
-autostart. **horizon** and **stellar-rpc** must be started manually after
+autostart. **horizon** and **rpc** must be started manually after
 stellar-core has caught up.
 
 ```shell
@@ -111,9 +111,9 @@ $ supervisorctl
 # Example commands
 supervisor> status
 supervisor> start horizon
-supervisor> start stellar-rpc
+supervisor> start rpc
 supervisor> restart stellar-core
-supervisor> tail -f stellar-rpc stdout
+supervisor> tail -f rpc stdout
 ```
 
 Services and autostart behavior:
@@ -123,7 +123,7 @@ Services and autostart behavior:
 | postgresql   | true      |                                           |
 | stellar-core | true      |                                           |
 | horizon      | false     | Start manually after core sync            |
-| stellar-rpc  | false     | Start manually after core sync            |
+| rpc          | false     | Start manually after core sync (stellar-rpc) |
 
 ## Migrations
 
@@ -136,7 +136,7 @@ Migration scripts run automatically on every container start via
 | 001 | Captive-core upgrade                                                 |
 | 002 | `DEPRECATED_SQL_LEDGER_STATE=false` for stellar-core 21.x            |
 | 003 | Remove deprecated settings for stellar-core 23.x                     |
-| 004 | Register stellar-rpc supervisord program on existing volumes         |
+| 004 | Register `rpc` supervisord program on existing volumes               |
 
 ### Upgrading from an older community release
 
@@ -147,10 +147,10 @@ Upgrading an existing volume (e.g., `community-v1.1-p21.2` or
 2. Start the new image with the **same volume path**.
 3. On first boot: the start script copies the `stellar-rpc/` default tree into
    the volume (since it doesn't exist yet), initializes its configs with your
-   network values, and migration 004 appends the `[program:stellar-rpc]` block
-   to your existing `supervisord.conf`.
+   network values, and migration 004 appends the `[program:rpc]` block to
+   your existing `supervisord.conf`.
 4. Once stellar-core has caught up, `supervisorctl start horizon` and
-   `supervisorctl start stellar-rpc` as needed.
+   `supervisorctl start rpc` as needed.
 
 No data is lost; the old core/horizon volumes are reused.
 

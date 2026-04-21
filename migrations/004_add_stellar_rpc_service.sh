@@ -15,7 +15,7 @@ set -o pipefail
 
 readonly STELLAR_HOME="/opt/stellar"
 readonly SUPERVISORD_CONF="${STELLAR_HOME}/supervisor/etc/supervisord.conf"
-readonly PROGRAM_MARKER='[program:stellar-rpc]'
+readonly PROGRAM_MARKER='[program:rpc]'
 
 if [[ ! -f "${SUPERVISORD_CONF}" ]]; then
     echo "[004] supervisord.conf not found at ${SUPERVISORD_CONF}; skipping"
@@ -34,7 +34,7 @@ fi
 
 cat >> "${SUPERVISORD_CONF}" <<'EOF'
 
-[program:stellar-rpc]
+[program:rpc]
 user=stellar
 directory=/opt/stellar/stellar-rpc
 command=/opt/stellar/stellar-rpc/bin/start
