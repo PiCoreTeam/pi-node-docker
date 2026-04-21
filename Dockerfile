@@ -23,7 +23,7 @@ COPY --from=stellar-core /usr/local/bin/stellar-core /usr/bin/stellar-core
 COPY --from=horizon /go/bin/horizon /usr/bin/stellar-horizon
 COPY --from=stellar-rpc /usr/local/bin/stellar-rpc /usr/bin/stellar-rpc
 
-RUN adduser --system --group --quiet --uid 999 --home /var/lib/stellar --disabled-password --shell /bin/bash stellar
+RUN adduser --system --group --quiet --uid 1500 --home /var/lib/stellar --disabled-password --shell /bin/bash stellar
 
 RUN ["mkdir", "-p", "/opt/stellar"]
 
