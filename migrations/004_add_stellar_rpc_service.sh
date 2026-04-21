@@ -28,8 +28,8 @@ if grep -Fq "${PROGRAM_MARKER}" "${SUPERVISORD_CONF}"; then
 fi
 
 if [[ -n "${MIGRATION_BACKUP_DIR:-}" ]]; then
-    cp "${SUPERVISORD_CONF}" "${MIGRATION_BACKUP_DIR}/supervisord.conf.bak"
-    echo "[004] backed up supervisord.conf to ${MIGRATION_BACKUP_DIR}"
+    cp "${SUPERVISORD_CONF}" "${MIGRATION_BACKUP_DIR}/supervisord.conf.004.bak"
+    echo "[004] backed up supervisord.conf to ${MIGRATION_BACKUP_DIR}/supervisord.conf.004.bak"
 fi
 
 cat >> "${SUPERVISORD_CONF}" <<'EOF'

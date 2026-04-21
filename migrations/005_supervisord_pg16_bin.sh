@@ -32,8 +32,8 @@ if ! grep -Fq "${OLD_BIN}" "${SUPERVISORD_CONF}"; then
 fi
 
 if [[ -n "${MIGRATION_BACKUP_DIR:-}" ]]; then
-    cp "${SUPERVISORD_CONF}" "${MIGRATION_BACKUP_DIR}/supervisord.conf.bak"
-    echo "[005] backed up supervisord.conf to ${MIGRATION_BACKUP_DIR}"
+    cp "${SUPERVISORD_CONF}" "${MIGRATION_BACKUP_DIR}/supervisord.conf.005.bak"
+    echo "[005] backed up supervisord.conf to ${MIGRATION_BACKUP_DIR}/supervisord.conf.005.bak"
 fi
 
 sed -i "s|${OLD_BIN}|${NEW_BIN}|g" "${SUPERVISORD_CONF}"
