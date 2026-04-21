@@ -8,7 +8,7 @@ export COREHOME="$STELLAR_HOME/core"
 export HZHOME="$STELLAR_HOME/horizon"
 export STELLAR_RPC_HOME="$STELLAR_HOME/stellar-rpc"
 
-export PGBIN="/usr/lib/postgresql/12/bin"
+export PGBIN="/usr/lib/postgresql/16/bin"
 export PGDATA="$PGHOME/data"
 export PGUSER="stellar"
 export PGPORT=5432
@@ -29,6 +29,7 @@ function main() {
 	echo "network: $NETWORK ($NETWORK_PASSPHRASE)"
 
 	copy_defaults
+	maybe_upgrade_postgres
 	init_db
 	init_stellar_core
 	init_horizon
@@ -388,6 +389,21 @@ function stop_postgres() {
 		sleep 0.5
 	done
 	echo "postgres: down"
+}
+
+function maybe_upgrade_postgres() {
+	# Major-version PG upgrade must run BEFORE any start_postgres call;
+	# PG 16 binaries cannot attach to a PG 12 data directory.
+	if [ ! -f "$PGDATA/PG_VERSION" ]; then
+		return 0
+	fi
+	local V
+	V=$(cat "$PGDATA/PG_VERSION" | tr -d '[:space:]')
+	case "$V" in
+		16) echo "postgres: already at v16"; return 0 ;;
+		12) /opt/stellar-default/common/postgresql/bin/upgrade-pg12-to-pg16.sh ;;
+		*)  echo "postgres: unsupported cluster version '$V'" >&2; exit 1 ;;
+	esac
 }
 
 pushd () {
