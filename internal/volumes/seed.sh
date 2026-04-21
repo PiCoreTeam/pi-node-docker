@@ -59,16 +59,20 @@ while true; do
         exit 1
     fi
 
+    # horizon is `autostart=false` in this image, so we don't poll on horizon RUNNING.
+    # init_horizon already creates the horizon DB + .quickstart-initialized marker
+    # during container start-up, which is all the PG 12 → 16 migration test needs.
     pgver=$(docker exec "$NAME" sh -c 'cat /opt/stellar/postgresql/data/PG_VERSION 2>/dev/null || true' | tr -d '[:space:]')
-    buckets=$(docker exec "$NAME" sh -c 'ls /opt/stellar/core/buckets/*.xdr.gz 2>/dev/null | head -n 1 || true')
+    buckets=$(docker exec "$NAME" sh -c 'ls /opt/stellar/core/buckets/bucket-*.xdr* 2>/dev/null | head -n 1 || true')
+    horizon_init=$(docker exec "$NAME" sh -c 'test -f /opt/stellar/horizon/.quickstart-initialized && echo yes || true')
     status=$(docker exec "$NAME" supervisorctl status 2>/dev/null || true)
-    core_run=$(echo "$status"   | awk '/^stellar-core/    {print $2}')
-    horizon_run=$(echo "$status" | awk '/^horizon/        {print $2}')
+    core_run=$(echo "$status" | awk '/^stellar-core/ {print $2}')
+    pg_run=$(echo "$status"   | awk '/^postgresql/  {print $2}')
 
-    if [ "$pgver" = "12" ] && [ -n "$buckets" ] && [ "$core_run" = "RUNNING" ] && [ "$horizon_run" = "RUNNING" ]; then
+    if [ "$pgver" = "12" ] && [ -n "$buckets" ] && [ "$horizon_init" = "yes" ] && [ "$core_run" = "RUNNING" ] && [ "$pg_run" = "RUNNING" ]; then
         if [ "$stable_since" -eq 0 ]; then
             stable_since=$now
-            echo "seed: both services RUNNING, waiting ${STABLE_SEC}s for stability..."
+            echo "seed: readiness signals all green, waiting ${STABLE_SEC}s for stability..."
         elif [ $((now - stable_since)) -ge "$STABLE_SEC" ]; then
             break
         fi
