@@ -1,11 +1,12 @@
 set -e
 
 export DEBIAN_FRONTEND=noninteractive
-apt-get install -y gnupg rsync wget webfs ca-certificates
+apt-get install -y gnupg rsync wget ca-certificates
 install -d /usr/share/keyrings
 wget -qO - https://apt.stellar.org/SDF.asc | gpg --dearmor -o /usr/share/keyrings/SDF.gpg
-echo "deb [signed-by=/usr/share/keyrings/SDF.gpg] https://apt.stellar.org noble stable" >/etc/apt/sources.list.d/SDF.list
-echo "deb [signed-by=/usr/share/keyrings/SDF.gpg] https://apt.stellar.org noble unstable" >/etc/apt/sources.list.d/SDF-unstable.list
+# stellar-archivist packages are published under focal; the Go binary is distro-agnostic.
+echo "deb [signed-by=/usr/share/keyrings/SDF.gpg] https://apt.stellar.org focal stable" >/etc/apt/sources.list.d/SDF.list
+echo "deb [signed-by=/usr/share/keyrings/SDF.gpg] https://apt.stellar.org focal unstable" >/etc/apt/sources.list.d/SDF-unstable.list
 apt-get update
 apt-get install -y stellar-archivist
 apt-get clean
