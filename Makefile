@@ -1,10 +1,10 @@
 __PHONY__: build build-deps build-deps-core build-deps-horizon
 
-TAG?=organization-mainnet-v1.0-p22.1
+TAG?=organization-mainnet-v1.0-p23.0.1-RC1
 CORE_REPO?=https://github.com/stellar/stellar-core.git
-CORE_REF?=v22.1.0
+CORE_REF?=v23.0.1
 CORE_CONFIGURE_FLAGS?=--disable-tests
-HORIZON_REF?=horizon-v22.0.3
+HORIZON_REF?=horizon-v23.0.0
 
 build-deps: build-deps-core build-deps-horizon
 
@@ -22,4 +22,3 @@ build:
 	docker build --platform linux/amd64 -t pinetwork/pi-node-docker:$(TAG) -f Dockerfile . \
 	  --build-arg STELLAR_CORE_IMAGE_REF=stellar-core:$(CORE_REF) \
 	  --build-arg HORIZON_IMAGE_REF=stellar-horizon:$(HORIZON_REF)
-

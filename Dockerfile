@@ -4,7 +4,7 @@ ARG HORIZON_IMAGE_REF
 FROM $STELLAR_CORE_IMAGE_REF AS stellar-core
 FROM $HORIZON_IMAGE_REF AS horizon
 
-FROM ubuntu:20.04
+FROM ubuntu:24.04
 
 EXPOSE 5432
 EXPOSE 8000
@@ -17,7 +17,8 @@ RUN /dependencies
 COPY --from=stellar-core /usr/local/bin/stellar-core /usr/bin/stellar-core
 COPY --from=horizon /go/bin/horizon /usr/bin/stellar-horizon
 
-RUN adduser --system --group --quiet --home /var/lib/stellar --disabled-password --shell /bin/bash stellar
+# UID 1500: 999 conflicts with a system group created by apt on Ubuntu 24.04 noble.
+RUN adduser --system --group --quiet --uid 1500 --home /var/lib/stellar --disabled-password --shell /bin/bash stellar
 
 ADD install /
 RUN ["chmod", "+x", "install"]
