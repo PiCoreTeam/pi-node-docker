@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# supervisord setuid()s to stellar but does not reset HOME, so HOME stays /root
+# (inherited from /start). libpq 14+ honors $HOME/.pgpass; with HOME=/root and
+# /root/.pgpass owned by root mode 0600, psql cannot read it and prompts for
+# password — under supervisord's stdin this hangs indefinitely. Point HOME at
+# stellar's actual home (per /etc/passwd) so libpq finds /var/lib/stellar/.pgpass.
+export HOME="/var/lib/stellar"
+
 while ! psql -U stellar -c 'select 1' core &> /dev/null ; do
   echo "Waiting for postgres to be available..."
   sleep 1
