@@ -2,6 +2,9 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# See common/core/bin/start for rationale on HOME override.
+export HOME="/var/lib/stellar"
+
 while ! psql -U stellar -c 'select 1' horizon &> /dev/null ; do
   echo "Waiting for postgres to be available..."
   sleep 1
