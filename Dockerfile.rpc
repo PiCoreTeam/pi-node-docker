@@ -1,0 +1,24 @@
+FROM golang:1.24-bullseye AS builder
+
+ARG RPC_REPO=https://github.com/stellar/stellar-rpc.git
+ARG REF
+ARG RUST_TOOLCHAIN_VERSION=stable
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y build-essential jq curl git && apt-get clean
+
+ENV CARGO_HOME=/rust/.cargo
+ENV RUSTUP_HOME=/rust/.rust
+ENV PATH="/usr/local/go/bin:$CARGO_HOME/bin:${PATH}"
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUST_TOOLCHAIN_VERSION
+
+WORKDIR /go/src/github.com/stellar/stellar-rpc
+RUN git clone ${RPC_REPO} /go/src/github.com/stellar/stellar-rpc
+RUN git fetch origin ${REF}
+RUN git checkout ${REF}
+
+RUN make build-stellar-rpc
+
+FROM ubuntu:focal
+COPY --from=builder /go/src/github.com/stellar/stellar-rpc/stellar-rpc /usr/local/bin/stellar-rpc
+CMD stellar-rpc

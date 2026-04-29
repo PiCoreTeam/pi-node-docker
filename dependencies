@@ -1,15 +1,27 @@
 #! /usr/bin/env bash
 set -e
 
-# dependencies
+# dependencies (Ubuntu 24.04 noble)
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
-apt-get install -y curl wget git apt-transport-https \
-                   libpq-dev libsqlite3-dev libsasl2-dev \
-                   postgresql-client postgresql postgresql-contrib \
+apt-get install -y curl wget git gnupg ca-certificates apt-transport-https lsb-release
+
+# PGDG repo (for PG 12 pg_upgrade). PG 16 ships in Ubuntu 24.04 main.
+install -d /usr/share/keyrings
+curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+    | gpg --dearmor -o /usr/share/keyrings/pgdg.gpg
+echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt noble-pgdg main" \
+    > /etc/apt/sources.list.d/pgdg.list
+apt-get update
+
+apt-get install -y libpq-dev libsqlite3-dev libsasl2-dev \
+                   postgresql-client-16 postgresql-16 postgresql-contrib-16 \
+                   postgresql-12 \
                    sudo vim zlib1g-dev supervisor psmisc \
-                   rsync jq netcat webfs \
-                   libunwind8 sqlite3 libc++abi1-12 libc++1-12 # stellar-core runtime deps
+                   rsync jq netcat-openbsd webfs \
+                   libunwind8 sqlite3 libc++abi1 libc++1  # stellar-core runtime deps
+
 apt-get clean
+rm -rf /var/lib/apt/lists/*
 
 echo "\nDone installing dependencies...\n"

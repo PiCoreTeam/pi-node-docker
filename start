@@ -6,11 +6,14 @@ export PGHOME="$STELLAR_HOME/postgresql"
 export SUPHOME="$STELLAR_HOME/supervisor"
 export COREHOME="$STELLAR_HOME/core"
 export HZHOME="$STELLAR_HOME/horizon"
+export STELLAR_RPC_HOME="$STELLAR_HOME/stellar-rpc"
 
 export HISTHOME="$STELLAR_HOME/history"
 export LOCALHIST="$HISTHOME/local"
 
-export PGBIN="/usr/lib/postgresql/12/bin"
+: "${ENABLE_RPC_ADMIN_ENDPOINT:=false}"
+
+export PGBIN="/usr/lib/postgresql/16/bin"
 export PGDATA="$PGHOME/data"
 export PGUSER="stellar"
 export PGPORT=5432
@@ -30,9 +33,11 @@ function main() {
 	echo "network: $NETWORK ($NETWORK_PASSPHRASE)"
 
 	copy_defaults
+	maybe_upgrade_postgres
 	init_db
 	init_stellar_core
 	init_horizon
+	init_stellar_rpc
 	copy_pgpass
 
 	# run migrations (postgres is still running here)
@@ -133,6 +138,16 @@ function copy_defaults() {
 		echo "horizon: config directory exists, skipping copy"
 	else
 		$CP /opt/stellar-default/common/horizon/ $HZHOME
+		$CP /opt/stellar-default/$NETWORK/horizon/ $HZHOME
+	fi
+
+	if [ -d $STELLAR_RPC_HOME/etc ]; then
+		echo "stellar-rpc: config directory exists, skipping copy"
+	else
+		$CP /opt/stellar-default/common/stellar-rpc/ $STELLAR_RPC_HOME
+		if [ -d /opt/stellar-default/$NETWORK/stellar-rpc/ ]; then
+			$CP /opt/stellar-default/$NETWORK/stellar-rpc/ $STELLAR_RPC_HOME
+		fi
 	fi
 }
 
@@ -183,10 +198,15 @@ function init_db() {
 	start_postgres
 	run_silent "create-horizon-db" sudo -u postgres createdb horizon
 	run_silent "create-core-db" sudo -u postgres createdb core
+	# PG 15+ revoked CREATE on schema public from PUBLIC by default; grant it explicitly.
 	run_silent "stellar-postgres-user" sudo -u postgres psql <<-SQL
 		CREATE USER $PGUSER WITH PASSWORD '$PGPASS';
 		GRANT ALL PRIVILEGES ON DATABASE horizon to $PGUSER;
 		GRANT ALL PRIVILEGES ON DATABASE core to $PGUSER;
+		\connect core
+		GRANT ALL ON SCHEMA public TO $PGUSER;
+		\connect horizon
+		GRANT ALL ON SCHEMA public TO $PGUSER;
 	SQL
 
 	touch .quickstart-initialized
@@ -333,6 +353,61 @@ function stop_postgres() {
 		sleep 0.5
 	done
 	echo "postgres: down"
+}
+
+function init_stellar_rpc() {
+	if [ -f $STELLAR_RPC_HOME/.quickstart-initialized ]; then
+		echo "stellar-rpc: already initialized"
+		return 0
+	fi
+
+	pushd $STELLAR_RPC_HOME
+	mkdir -p ./captive-core
+
+	local CAPTIVE_CFG="$STELLAR_RPC_HOME/etc/stellar-captive-core.cfg"
+	local DATABASE_URL="sqlite3://$STELLAR_RPC_HOME/captive-core/stellar-rpc.db"
+
+	sed -ri \
+		-e "s/__NETWORK__/$NETWORK_PASSPHRASE/g" \
+		-e "s|__DATABASE__|$DATABASE_URL|g" \
+		"$CAPTIVE_CFG"
+
+	local ADMIN_ENDPOINT=0.0.0.0:6061
+	if [ "$ENABLE_RPC_ADMIN_ENDPOINT" != "true" ]; then
+		ADMIN_ENDPOINT=
+	fi
+
+	sed -ri \
+		-e "s/__NETWORK__/$NETWORK_PASSPHRASE/g" \
+		-e "s=__ARCHIVE__=$HISTORY_ARCHIVE_URLS=g" \
+		-e "s=__STELLAR_RPC_ADMIN_ENDPOINT__=$ADMIN_ENDPOINT=g" \
+		etc/stellar-rpc.cfg
+
+	run_silent "chown-stellar-rpc" chown -R stellar:stellar .
+
+	touch .quickstart-initialized
+	popd
+}
+
+function maybe_upgrade_postgres() {
+	# Major-version PG upgrade must run BEFORE any start_postgres call;
+	# PG 16 binaries cannot attach to a PG 12 data directory.
+	if [ ! -f "$PGDATA/PG_VERSION" ]; then
+		# Partial upgrade: data/ is gone but bak still exists — restore and retry.
+		if [ -d "$PGHOME/data.pg12.bak" ]; then
+			echo "postgres: partial upgrade detected, restoring backup to retry"
+			mv "$PGHOME/data.pg12.bak" "$PGDATA"
+		else
+			return 0
+		fi
+	fi
+	local V
+	V=$(cat "$PGDATA/PG_VERSION" | tr -d '[:space:]')
+	case "$V" in
+		16) echo "postgres: already at v16"; return 0 ;;
+		12) /opt/stellar-default/common/postgresql/bin/upgrade-pg12-to-pg16.sh ;;
+		*)  echo "postgres: unsupported cluster version '$V'" >&2; exit 1 ;;
+	esac
 }
 
 pushd () {
