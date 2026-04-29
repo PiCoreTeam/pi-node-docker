@@ -115,10 +115,19 @@ show_protocol() {
   fi
 
   local w=14
+  local ledger_version ledger_num
+  ledger_version=$(jq_val "$json" '.info.ledger.version')
+  ledger_num=$(jq_val "$json" '.info.ledger.num')
+
+  local protocol_display="$ledger_version"
+  if [ "$ledger_version" = "0" ] && { [ "$ledger_num" = "0" ] || [ "$ledger_num" = "1" ]; }; then
+    protocol_display="$ledger_version  (ledger not established — catching up)"
+  fi
+
   field "$w" "State"        "$(jq_val "$json" '.info.state')"
-  field "$w" "Block"        "$(jq_val "$json" '.info.ledger.num')"
+  field "$w" "Block"        "$ledger_num"
   field "$w" "Quorum Block" "$(jq_val "$json" '.info.quorum.qset.ledger // .info.ledger.num')"
-  field "$w" "Protocol"     "$(jq_val "$json" '.info.ledger.version')"
+  field "$w" "Protocol"     "$protocol_display"
   field "$w" "Network"      "$(jq_val "$json" '.info.network')"
   field "$w" "Version"      "$(jq_val "$json" '.info.build')"
 }
