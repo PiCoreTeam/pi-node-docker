@@ -8,9 +8,10 @@ This image runs in **persistent mode**, storing all data and configuration on a 
 
 The image uses the following software:
 
-- **PostgreSQL 12** - for storing both stellar-core and horizon data
-- **stellar-core** 21.2.0
-- **horizon** 2.32.0
+- **PostgreSQL 16** - for storing both stellar-core and horizon data (auto-upgraded from PG 12 on first boot)
+- **stellar-core** 23.0.1
+- **horizon** 23.0.0
+- **stellar-rpc** 23.0.4 (Soroban RPC, disabled by default)
 - **Supervisord** - for managing the processes of the services above
 - **webfsd** - for serving local history archives
 
@@ -31,7 +32,7 @@ The software listens on several ports. At minimum, expose the horizon HTTP port 
 You **must** mount a host directory to `/opt/stellar` to store persistent data:
 
 ```shell
-$ docker run --rm -it -p "31401:8000" -v "/path/to/data:/opt/stellar" --name pi-node pinetwork/pi-node-docker:mainnet_relay-v1.1-p21.2 --mainnetrelay
+$ docker run --rm -it -p "31401:8000" -v "/path/to/data:/opt/stellar" --name pi-node pinetwork/pi-node-docker:mainnet_relay-v1.0-p23.0.1 --mainnetrelay
 ```
 
 The `-v` option mounts the host directory into the container at `/opt/stellar`. Use an absolute path and keep it consistent across container restarts.
@@ -87,8 +88,9 @@ Stop the container before editing configuration files, then restart after change
 
 | Variable            | Description                                                                         |
 |---------------------|-------------------------------------------------------------------------------------|
-| `POSTGRES_PASSWORD` | Set PostgreSQL password (avoids interactive prompt)                                 |
-| `NODE_PRIVATE_KEY`  | Set the node's private key (secret seed). Optional - auto-generated if not provided |
+| `POSTGRES_PASSWORD`         | Set PostgreSQL password (avoids interactive prompt)                                 |
+| `NODE_PRIVATE_KEY`          | Set the node's private key (secret seed). Optional - auto-generated if not provided |
+| `ENABLE_RPC_ADMIN_ENDPOINT` | Set to `true` to expose stellar-rpc admin endpoint on `0.0.0.0:6061` (default: false) |
 
 ## Migrations
 
@@ -126,6 +128,9 @@ If you prefer not to rely on scripts and want to manage configuration changes ma
 | 5432  | PostgreSQL   | Database access port     |
 | 8000  | Horizon      | Main HTTP port           |
 | 6060  | Horizon      | Admin port               |
+| 8003  | stellar-rpc  | Soroban JSON-RPC port    |
+| 6061  | stellar-rpc  | Admin port (opt-in)      |
+| 11826 | stellar-rpc  | captive-core HTTP (internal) |
 | 31402 | stellar-core | Peer node port           |
 | 11626 | stellar-core | HTTP port (internal)     |
 | 1570  | webfsd       | Local history server     |
@@ -146,6 +151,8 @@ If you prefer not to rely on scripts and want to manage configuration changes ma
 - **stellar-core HTTP (11626):** Expose only to trusted networks. Allows administrative commands.
 - **stellar-core Peer (31402):** Can be exposed publicly to improve network connectivity.
 - **Local history (1570):** Used for serving local history archives.
+- **stellar-rpc (8003):** Safe to expose publicly. Soroban JSON-RPC endpoint.
+- **stellar-rpc Admin (6061):** Expose only to trusted networks. Only active when `ENABLE_RPC_ADMIN_ENDPOINT=true`.
 
 ## Accessing and Debugging
 
@@ -161,9 +168,11 @@ Services are managed using [supervisord](http://supervisord.org/index.html). Lau
 
 ```shell
 $ supervisorctl
-horizon                          RUNNING    pid 143, uptime 0:01:12
+horizon                          STOPPED    Not started
 postgresql                       RUNNING    pid 126, uptime 0:01:13
+rpc                              STOPPED    Not started
 stellar-core                     RUNNING    pid 125, uptime 0:01:13
+webfsd                           RUNNING    pid 127, uptime 0:01:13
 supervisor>
 ```
 
@@ -200,7 +209,7 @@ $ docker run -it --rm \
     -p "31402:31402" \
     -p "31403:1570" \
     --name pi-node \
-    pinetwork/pi-node-docker:mainnet_relay-v1.1-p21.2 --mainnetrelay
+    pinetwork/pi-node-docker:mainnet_relay-v1.0-p23.0.1 --mainnetrelay
 ```
 
 **Start a mainnet relay node in the background (after initialization):**
@@ -211,7 +220,7 @@ $ docker run -d \
     -p "31402:31402" \
     -p "31403:1570" \
     --name pi-node \
-    pinetwork/pi-node-docker:mainnet_relay-v1.1-p21.2 --mainnetrelay
+    pinetwork/pi-node-docker:mainnet_relay-v1.0-p23.0.1 --mainnetrelay
 ```
 
 **Start with pre-set PostgreSQL password (non-interactive):**
@@ -223,7 +232,7 @@ $ docker run -d \
     -p "31403:1570" \
     -e POSTGRES_PASSWORD=your_secure_password \
     --name pi-node \
-    pinetwork/pi-node-docker:mainnet_relay-v1.1-p21.2 --mainnetrelay
+    pinetwork/pi-node-docker:mainnet_relay-v1.0-p23.0.1 --mainnetrelay
 ```
 
 ## Docker Compose
@@ -235,7 +244,7 @@ name: pi-node
 
 services:
   mainnet:
-    image: pinetwork/pi-node-docker:mainnet_relay-v1.1-p21.2
+    image: pinetwork/pi-node-docker:mainnet_relay-v1.0-p23.0.1
     container_name: mainnet
     env_file:
       - ./.env
@@ -269,7 +278,9 @@ $ docker compose up -d mainnet
 $ make build
 ```
 
-This builds the image as `pinetwork/pi-node-docker:mainnet_relay-v1.1-p21.2`.
+This builds the image as `pinetwork/pi-node-docker:mainnet_relay-v1.0-p23.0.1`.
+
+Note: `make build` also runs `make build-deps` which builds stellar-core, horizon, and stellar-rpc from source.
 
 ## Troubleshooting
 
