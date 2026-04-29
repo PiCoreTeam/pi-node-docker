@@ -28,7 +28,19 @@ fi
 mv "$PGDATA" "$BAK"
 chown -R postgres:postgres "$BAK"
 
+# Start and stop the old cluster so it writes a valid checkpoint.
+# Without this, a container that was killed uncleanly (OOM, SIGKILL) leaves
+# the WAL in a state pg_upgrade cannot replay, causing a PANIC on startup.
+echo "postgres: recovering old cluster before upgrade..."
+sudo -u postgres "$OLD_BIN/pg_ctl" start -w -t 60 -D "$BAK" \
+    -l /tmp/pg12_recovery.log \
+    -o "-c listen_addresses='' -c unix_socket_directories=/tmp"
+sudo -u postgres "$OLD_BIN/pg_ctl" stop -w -D "$BAK" -m fast
+
 # Fresh PG 16 cluster.
+# Pre-create $PGDATA so initdb can run — parent dir may be root-owned on the volume.
+mkdir -p "$PGDATA"
+chown postgres:postgres "$PGDATA"
 sudo -u postgres "$NEW_BIN/initdb" --locale=C.UTF-8 -D "$PGDATA"
 
 # Keep old pg_hba.conf so auth rules survive the upgrade. postgresql.conf is
@@ -54,4 +66,5 @@ rm -f ./analyze_new_cluster.sh ./delete_old_cluster.sh ./*.log 2>/dev/null || tr
 popd >/dev/null
 rm -rf "$UPG_DIR"
 
-echo "postgres: pg_upgrade complete; v12 data preserved at $BAK"
+rm -rf "$BAK"
+echo "postgres: pg_upgrade complete"
