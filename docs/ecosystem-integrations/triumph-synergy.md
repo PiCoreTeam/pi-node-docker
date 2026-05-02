@@ -65,5 +65,5 @@ docker exec triumph-pi-mainnet-node node-status
 
 Before upgrading to a new image version, stop the container and snapshot
 the `pi_mainnet_stellar` Docker volume (pg_upgrade rewrites in place).
-Per the v1.0-p23.0.1 release notes: back up volumes before upgrading,
+Per the [v1.0-p23.0.1 release notes](https://github.com/jdrains110-beep/Triumph-Synergy-Digital-Financial-Ecosystem/releases/tag/v1.0-p23.0.1): back up volumes before upgrading,
 do not interrupt the first boot while `pg_upgrade` and migrations run.
