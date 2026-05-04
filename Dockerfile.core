@@ -10,6 +10,7 @@ RUN apt-get update && \
 
 ARG CORE_REPO=https://github.com/stellar/stellar-core.git
 ARG REF
+ARG CORE_VERSION=${REF}
 RUN git clone --depth 1 --branch ${REF} --recurse-submodules --shallow-submodules \
     ${CORE_REPO} /stellar-core
 WORKDIR /stellar-core
@@ -62,7 +63,7 @@ RUN sed -i \
     src/rust/bin/cxxbridge src/rust/src/bridge.rs --cfg test=false \
       --output src/rust/RustBridge.cpp && \
     touch src/rust/RustBridge.h src/rust/RustBridge.cpp && \
-    sed -e "s@%%VERSION%%@${REF}@" \
+    sed -e "s@%%VERSION%%@${CORE_VERSION}@" \
         src/main/StellarCoreVersion.cpp.in > src/main/StellarCoreVersion.cpp
 
 # Pre-run all Rust build steps serially before parallel make to avoid ETXTBSY.
