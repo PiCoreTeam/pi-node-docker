@@ -25,14 +25,31 @@ RUN ./install-rust.sh
 ENV PATH "/root/.cargo/bin:$PATH"
 RUN ./configure CC="${CC}" CXX="${CXX}" CFLAGS="${CFLAGS}" CXXFLAGS="${CXXFLAGS}" ${CONFIGURE_FLAGS}
 
-# Pre-install the pinned Rust toolchain so 'cargo +<channel>' during make -j
-# does NOT trigger rustup writes to the overlay filesystem (ETXTBSY on macOS).
+# Pre-install the pinned Rust toolchain (from rust-toolchain.toml) so that
+# 'cargo +<channel>' during make -j does NOT trigger rustup to download and
+# write new executables to the overlay filesystem (which causes ETXTBSY).
 RUN TOOLCHAIN=$(sed -n 's/channel *= *"\([^"]*\)"/\1/p' rust-toolchain.toml) && \
     rustup toolchain install "${TOOLCHAIN}" --no-self-update
 
-# Pre-generate cargo/cxxbridge targets serially before parallel make to avoid
+# Pre-generate all cargo/cxxbridge-derived targets before parallel make to avoid
 # ETXTBSY on Docker Desktop / macOS overlay filesystem.
-# In v22 cxxbridge reads rust/src/lib.rs (not bridge.rs as in v23+).
+#
+# Root cause: make -j runs cargo (writing new executables to the overlay layer)
+# concurrently with bash-executed Makefile recipes. Writing a new executable to
+# an overlayfs layer while another process exec's /bin/bash triggers a kernel
+# ETXTBSY bug present in Docker Desktop on macOS.
+#
+# The Makefile rules that trigger cargo during make -j:
+#   $(RUST_CXXBRIDGE): Makefile  → reinstalls cxxbridge if Makefile is newer
+#   rust/RustBridge.h: ... $(RUST_CXXBRIDGE)  → re-runs if cxxbridge is newer
+#   main/StellarCoreVersion.cpp: always  → always re-runs (sed, safe but races)
+#
+# Fix: patch Makefile rules, install cxxbridge, generate derived files, then
+# touch everything in dependency order so make sees every target as up-to-date
+# and skips all cargo/bash steps during make -j.
+#
+# Final mtime order required by make:
+#   Makefile < cxxbridge < RustBridge.{h,cpp} < StellarCoreVersion.cpp
 RUN sed -i \
       -e 's|^main/StellarCoreVersion\.cpp: always|main/StellarCoreVersion.cpp:|' \
       src/Makefile && \
@@ -40,15 +57,18 @@ RUN sed -i \
     CARGO_HTTP_MULTIPLEXING=false cargo install --force --locked \
       --root src/rust cxxbridge-cmd --version 1.0.68 && \
     touch src/rust/bin/cxxbridge && \
-    src/rust/bin/cxxbridge src/rust/src/lib.rs --cfg test=false \
+    src/rust/bin/cxxbridge src/rust/src/bridge.rs --cfg test=false \
       --header --output src/rust/RustBridge.h && \
-    src/rust/bin/cxxbridge src/rust/src/lib.rs --cfg test=false \
+    src/rust/bin/cxxbridge src/rust/src/bridge.rs --cfg test=false \
       --output src/rust/RustBridge.cpp && \
     touch src/rust/RustBridge.h src/rust/RustBridge.cpp && \
     sed -e "s@%%VERSION%%@${REF}@" \
         src/main/StellarCoreVersion.cpp.in > src/main/StellarCoreVersion.cpp
 
 # Pre-run all Rust build steps serially before parallel make to avoid ETXTBSY.
+# Any cargo write to the overlay filesystem (index updates, .rlib compilation,
+# soroban builds, main Rust library) races with concurrent bash forks in make -j
+# recipes. Running them serially here ensures no cargo I/O happens during make -j.
 RUN make -C src ../src/rust/src/dep-trees/equal-trees.stamp && \
     make -C src ../src/rust/soroban/soroban-libs.stamp && \
     make -C src ../target/release/librust_stellar_core.a
