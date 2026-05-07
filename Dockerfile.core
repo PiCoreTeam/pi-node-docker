@@ -24,6 +24,10 @@ ARG CONFIGURE_FLAGS='--disable-tests'
 RUN ./autogen.sh
 RUN ./install-rust.sh
 ENV PATH "/root/.cargo/bin:$PATH"
+# Disable LTO and bump codegen-units: full LTO link of rust_stellar_core peaks
+# >8 GB and OOM-kills under Docker Desktop's default 8 GB memory limit.
+ENV CARGO_PROFILE_RELEASE_LTO=off
+ENV CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16
 RUN ./configure CC="${CC}" CXX="${CXX}" CFLAGS="${CFLAGS}" CXXFLAGS="${CXXFLAGS}" ${CONFIGURE_FLAGS}
 
 # Pre-install the pinned Rust toolchain (from rust-toolchain.toml) so that
