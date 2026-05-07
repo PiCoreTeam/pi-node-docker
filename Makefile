@@ -1,14 +1,14 @@
 __PHONY__: build build-deps build-deps-core build-deps-horizon build-deps-rpc
 
-TAG?=community-v1.0-p25.2.2
+TAG?=community-v1.0-p26.0.1
 CORE_REPO?=https://github.com/stellar/stellar-core.git
-CORE_REF?=v25.2.2-external
-CORE_VERSION?=v25.2.2
+CORE_REF?=v26.0.1
+CORE_VERSION?=v26.0.1
 CORE_CONFIGURE_FLAGS?=--disable-tests
 HORIZON_REPO?=https://github.com/stellar/stellar-horizon.git
-HORIZON_REF?=v25.1.0
+HORIZON_REF?=v26.0.0
 RPC_REPO?=https://github.com/stellar/stellar-rpc.git
-RPC_REF?=v25.1.1
+RPC_REF?=v26.0.0
 
 build-deps: build-deps-core build-deps-horizon build-deps-rpc
 
