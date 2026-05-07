@@ -8,7 +8,7 @@ FROM ${STELLAR_CORE_PREBUILT} AS source
 FROM ubuntu:noble
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
-    apt-get -y install libunwind8 postgresql curl sqlite iproute2 && \
+    apt-get -y install libunwind8 postgresql curl sqlite3 iproute2 && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=source /usr/bin/stellar-core /usr/local/bin/stellar-core
