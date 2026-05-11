@@ -2,3 +2,4 @@
 docker-compose.yml
 stellar-data/
 internal/
+docs/
