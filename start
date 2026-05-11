@@ -29,6 +29,7 @@ function main() {
 	echo "network: $NETWORK ($NETWORK_PASSPHRASE)"
 
 	copy_defaults
+	ensure_stellar_ownership
 	init_db
 	init_stellar_core
 	init_horizon
@@ -164,6 +165,19 @@ function copy_defaults() {
 			$CP /opt/stellar-default/$NETWORK/stellar-rpc/ $STELLAR_RPC_HOME
 		fi
 	fi
+}
+
+function ensure_stellar_ownership() {
+	# Heal UID drift across image upgrades. Files in the persistent /opt/stellar
+	# volume keep their numeric UID; if a newer image gives `stellar` a different
+	# UID, stellar-core/horizon/stellar-rpc (running as stellar via supervisord)
+	# lose write access to dirs created under the old UID. Idempotent — chowning
+	# to the current UID is a no-op when it already matches.
+	for dir in "$COREHOME" "$HZHOME" "$STELLAR_RPC_HOME"; do
+		if [ -d "$dir" ]; then
+			chown -R stellar:stellar "$dir"
+		fi
+	done
 }
 
 function copy_pgpass() {
