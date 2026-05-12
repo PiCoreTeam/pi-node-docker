@@ -31,7 +31,6 @@ function main() {
 
 	copy_defaults
 	ensure_stellar_ownership
-	maybe_upgrade_postgres
 	init_db
 	init_stellar_core
 	init_horizon
@@ -387,27 +386,6 @@ function stop_postgres() {
 		sleep 0.5
 	done
 	echo "postgres: down"
-}
-
-function maybe_upgrade_postgres() {
-	# Major-version PG upgrade must run BEFORE any start_postgres call;
-	# PG 16 binaries cannot attach to a PG 12 data directory.
-	if [ ! -f "$PGDATA/PG_VERSION" ]; then
-		# Partial upgrade: data/ is gone but bak still exists — restore and retry.
-		if [ -d "$PGHOME/data.pg12.bak" ]; then
-			echo "postgres: partial upgrade detected, restoring backup to retry"
-			mv "$PGHOME/data.pg12.bak" "$PGDATA"
-		else
-			return 0
-		fi
-	fi
-	local V
-	V=$(cat "$PGDATA/PG_VERSION" | tr -d '[:space:]')
-	case "$V" in
-		16) echo "postgres: already at v16"; return 0 ;;
-		12) /opt/stellar-default/common/postgresql/bin/upgrade-pg12-to-pg16.sh ;;
-		*)  echo "postgres: unsupported cluster version '$V'" >&2; exit 1 ;;
-	esac
 }
 
 pushd () {
