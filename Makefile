@@ -1,6 +1,6 @@
 __PHONY__: build build-deps build-deps-core build-deps-horizon
 
-TAG?=organization-mainnet-v1.0-p24.1.0
+TAG?=organization-mainnet-v1.0-p24.1.0-RC1
 CORE_REPO?=https://github.com/stellar/stellar-core.git
 CORE_REF?=v24.1.0
 CORE_CONFIGURE_FLAGS?=--disable-tests
