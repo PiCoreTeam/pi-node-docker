@@ -9,7 +9,7 @@ restarts and allowing configuration customization.
 
 ## Software Versions
 
-- **PostgreSQL 16** — stores stellar-core and horizon data (auto-upgraded from PG 12 on first boot; see below)
+- **PostgreSQL 16** — stores stellar-core and horizon data
 - **stellar-core 23.0.1** — Pi Network consensus node
 - **horizon 23.0.0** — Stellar Horizon API server (captive-core mode)
 - **stellar-rpc 23.0.4** — Soroban JSON-RPC server (captive-core mode, sqlite backend)
@@ -140,8 +140,8 @@ Migration scripts run automatically on every container start via
 
 ### Upgrading from an older community release
 
-Upgrading an existing volume (e.g., `community-v1.1-p21.2` or
-`community-v1.0-p22.1`) is seamless:
+Upgrading an existing volume (e.g., `community-v1.0-p23.0.1` or
+`community-v1.0-p25.2.2`) is seamless:
 
 1. Stop the old container.
 2. Start the new image with the **same volume path**.
@@ -195,24 +195,3 @@ $ docker run -d \
 
 Logs are at `/var/log/supervisor/` inside the container. Use
 `supervisorctl tail -f <service> stdout` for live output.
-
-## Upgrading from `community-v1.0-p22.1` (PG 12) to `community-v1.0-p26.0.1` (PG 16)
-
-On first boot against a `/opt/stellar` volume whose PostgreSQL cluster is still
-on version 12, the container detects the old cluster and runs `pg_upgrade --link`
-automatically before any service starts. After the upgrade, supervisord launches
-the cluster on PostgreSQL 16 and the node resumes catchup.
-
-The pre-upgrade v12 directory is preserved at
-`/opt/stellar/postgresql/data.pg12.bak` for forensic inspection. **It is not a
-safe rollback target:** `pg_upgrade --link` hardlinks relfiles into the new
-cluster, and `pg_control` is renamed in the old directory. Once the PG 16
-cluster has booted even once, the only supported rollback is restoring the
-entire `/opt/stellar` volume from a pre-upgrade backup. Take that backup before
-launching the new image.
-
-After you have verified the node is healthy, you may `rm -rf
-/opt/stellar/postgresql/data.pg12.bak` to reclaim the space.
-
-For local migration testing against a seeded PG 12 data set, see
-`internal/volumes/` (data is gitignored; the seed/clone/run scripts are in-repo).
