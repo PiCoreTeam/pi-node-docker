@@ -36,7 +36,7 @@ $ docker run --rm -it \
     -p "31402:31402" \
     -v "/path/to/data:/opt/stellar" \
     --name pi-node \
-    pinetwork/pi-node-docker:community-v1.0-p23.0.1 --mainnet
+    pinetwork/pi-node-docker:community-v1.0-p26.0.1 --mainnet
 ```
 
 Use a consistent absolute path across restarts. The second portion
@@ -165,7 +165,7 @@ $ docker run --rm -it \
     -v "/opt/pi-node:/opt/stellar" \
     -e POSTGRES_PASSWORD=yourpassword \
     --name pi-node \
-    pinetwork/pi-node-docker:community-v1.0-p23.0.1 --mainnet
+    pinetwork/pi-node-docker:community-v1.0-p26.0.1 --mainnet
 ```
 
 *Mainnet node (background, after initialization):*
@@ -177,7 +177,7 @@ $ docker run -d \
     -v "/opt/pi-node:/opt/stellar" \
     -e POSTGRES_PASSWORD=yourpassword \
     --name pi-node \
-    pinetwork/pi-node-docker:community-v1.0-p23.0.1 --mainnet
+    pinetwork/pi-node-docker:community-v1.0-p26.0.1 --mainnet
 ```
 
 *Testnet node:*
@@ -188,7 +188,7 @@ $ docker run -d \
     -v "/opt/pi-testnet:/opt/stellar" \
     -e POSTGRES_PASSWORD=yourpassword \
     --name pi-testnet \
-    pinetwork/pi-node-docker:community-v1.0-p23.0.1 --testnet
+    pinetwork/pi-node-docker:community-v1.0-p26.0.1 --testnet
 ```
 
 ## Viewing Logs
@@ -196,7 +196,7 @@ $ docker run -d \
 Logs are at `/var/log/supervisor/` inside the container. Use
 `supervisorctl tail -f <service> stdout` for live output.
 
-## Upgrading from `community-v1.0-p22.1` (PG 12) to `community-v1.1-p23.0.1` (PG 16)
+## Upgrading from `community-v1.0-p22.1` (PG 12) to `community-v1.0-p26.0.1` (PG 16)
 
 On first boot against a `/opt/stellar` volume whose PostgreSQL cluster is still
 on version 12, the container detects the old cluster and runs `pg_upgrade --link`
