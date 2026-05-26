@@ -2,17 +2,15 @@
 #
 # Migration 007: refresh planner statistics with vacuumdb --analyze-in-stages.
 #
-# pg_upgrade does not carry pg_statistic across major-version upgrades — the
-# PG 16 cluster starts with empty planner stats, so the optimizer makes poor
-# join/scan decisions until ANALYZE has run. /common/postgresql/bin/upgrade-
-# pg12-to-pg16.sh invokes pg_upgrade's analyze_new_cluster.sh with `|| true`,
-# so any failure there leaves the cluster un-analyzed silently.
+# Defensive backstop for volumes carried over from community v1.1-p23.0.1,
+# where the PG 12 → PG 16 cluster upgrade ran in-image. pg_upgrade does not
+# carry pg_statistic across major-version upgrades, and the prior image's
+# analyze_new_cluster.sh invocation was gated with `|| true`, so a transient
+# failure there could leave the cluster un-analyzed silently.
 #
-# This migration re-runs vacuumdb in --analyze-in-stages mode (three passes
-# of progressively-deeper statistics) across all databases with parallelism.
-# Safe on a freshly-upgraded cluster and on a steady-state one — re-running
-# just refreshes the stats (cheap on a healthy cluster, essential on a fresh
-# upgrade).
+# Re-runs vacuumdb in --analyze-in-stages mode (three passes of progressively-
+# deeper statistics) across all databases with parallelism. Cheap on a healthy
+# cluster, essential on a stale one — re-running just refreshes the stats.
 #
 # Postgres must be running. migration_runner is invoked from /start after
 # init_horizon and before stop_postgres, so PG is available at this point.
