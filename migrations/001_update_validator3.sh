@@ -63,16 +63,25 @@ if [[ "$IS_MAINNET" == "true" ]]; then
     # --------------------------------------------------------------------------
 
     if grep -qF 'NAME="doesnotexistyet"' "$CFG"; then
-        log "Updating validator3 section..."
+        log "Updating validator3 section (placeholder state)..."
         sed -i \
             -e 's/NAME="doesnotexistyet"/NAME="validator3"/' \
-            -e 's/PUBLIC_KEY="GDKG2ZYQHSALQCXYQXAWVTT5IRFCDU2R5Q2TSH4GIJC6W2XZ5L3IG2OV"/PUBLIC_KEY="GC2WFHQRXLCCYRGVH3IUB5GN5W7RX73Z3E7DIKNI5XSF2M5DCLLT3GYQ"/' \
-            -e 's/ADDRESS="127\.0\.0\.1:31502"/ADDRESS="34.64.104.0:31402"/' \
+            -e 's/PUBLIC_KEY="GDKG2ZYQHSALQCXYQXAWVTT5IRFCDU2R5Q2TSH4GIJC6W2XZ5L3IG2OV"/PUBLIC_KEY="GAXTE5AV5OCOEGJE4OPVMN5UJHAKDQCSVMXI4P7SZIGQXVO7LP4JKX4M"/' \
+            -e 's/ADDRESS="127\.0\.0\.1:31502"/ADDRESS="34.64.252.77:31402"/' \
             -e 's|HISTORY="curl -sf http://127\.0\.0\.1:31503/|HISTORY="curl -sf https://history.mainnet.minepi.com/|' \
             "$CFG"
-        ok "Validator3 section updated"
+        ok "Validator3 section updated from placeholder state"
     else
-        log "Validator3 section already updated (skipped)"
+        log "Validator3 placeholder not present (skipped)"
+    fi
+
+    # Fix validator3 port 31502→31402 for nodes already past the placeholder state
+    if grep -qF 'ADDRESS="34.64.252.77:31502"' "$CFG"; then
+        log "Fixing validator3 port 31502→31402..."
+        sed -i 's/ADDRESS="34\.64\.252\.77:31502"/ADDRESS="34.64.252.77:31402"/' "$CFG"
+        ok "Validator3 port fixed"
+    else
+        log "Validator3 port already correct (skipped)"
     fi
 
     # --------------------------------------------------------------------------
@@ -147,6 +156,10 @@ if [[ "$IS_MAINNET" == "true" ]]; then
 
     if ! grep -qF '"$validator3"' "$CFG"; then
         die "Verification failed: validator3 not in PREFERRED_PEER_KEYS"
+    fi
+
+    if grep -qF 'ADDRESS="34.64.252.77:31502"' "$CFG"; then
+        die "Verification failed: validator3 still has wrong port 31502"
     fi
 
     ok "Mainnet config verification passed"

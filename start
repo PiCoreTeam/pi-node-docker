@@ -10,26 +10,27 @@ export HZHOME="$STELLAR_HOME/horizon"
 export HISTHOME="$STELLAR_HOME/history"
 export LOCALHIST="$HISTHOME/local"
 
-export PGBIN="/usr/lib/postgresql/12/bin"
+export PGBIN="/usr/lib/postgresql/16/bin"
 export PGDATA="$PGHOME/data"
 export PGUSER="stellar"
 export PGPORT=5432
 
 QUICKSTART_INITIALIZED=false
 CURRENT_POSTGRES_PID=""
-ENABLE_AUTO_MIGRATIONS=false
+ENABLE_AUTO_MIGRATIONS=${ENABLE_AUTO_MIGRATIONS:-true}
 
 function main() {
 	echo ""
 	echo "Starting Pi Node"
 	echo ""
 
-	process_args $*
+	process_args "$@"
 
 	echo "mode: $STELLAR_MODE"
 	echo "network: $NETWORK ($NETWORK_PASSPHRASE)"
 
 	copy_defaults
+	ensure_stellar_ownership
 	init_db
 	init_stellar_core
 	init_horizon
@@ -61,6 +62,9 @@ function process_args() {
       ;;
     --enable-auto-migrations)
       ENABLE_AUTO_MIGRATIONS=true
+      ;;
+    --disable-auto-migrations)
+      ENABLE_AUTO_MIGRATIONS=false
       ;;
 	  *)
 	    echo "Unknown container arg $ARG" >&2
@@ -149,6 +153,19 @@ function copy_defaults() {
 	fi
 }
 
+function ensure_stellar_ownership() {
+	# Heal UID drift across image upgrades. Files in the persistent /opt/stellar
+	# volume keep their numeric UID; if a newer image gives `stellar` a different
+	# UID, stellar-core/horizon (running as stellar via supervisord) lose write
+	# access to dirs created under the old UID. Idempotent — chowning to the
+	# current UID is a no-op when it already matches.
+	for dir in "$COREHOME" "$HISTHOME" "$HZHOME"; do
+		if [ -d "$dir" ]; then
+			chown -R stellar:stellar "$dir"
+		fi
+	done
+}
+
 function copy_pgpass() {
 	local CP="rsync -a"
 
@@ -196,10 +213,15 @@ function init_db() {
 	start_postgres
 	run_silent "create-horizon-db" sudo -u postgres createdb horizon
 	run_silent "create-core-db" sudo -u postgres createdb core
+	# PG 15+ revoked CREATE on schema public from PUBLIC by default; grant it explicitly.
 	run_silent "stellar-postgres-user" sudo -u postgres psql <<-SQL
 		CREATE USER $PGUSER WITH PASSWORD '$PGPASS';
 		GRANT ALL PRIVILEGES ON DATABASE horizon to $PGUSER;
 		GRANT ALL PRIVILEGES ON DATABASE core to $PGUSER;
+		\connect core
+		GRANT ALL ON SCHEMA public TO $PGUSER;
+		\connect horizon
+		GRANT ALL ON SCHEMA public TO $PGUSER;
 	SQL
 
 	touch .quickstart-initialized
@@ -374,4 +396,4 @@ popd () {
     command popd "$@" > /dev/null
 }
 
-main $@
+main "$@"
