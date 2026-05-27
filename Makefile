@@ -1,6 +1,6 @@
 __PHONY__: build build-deps build-deps-core build-deps-horizon
 
-TAG?=organization-mainnet-v1.0-p25.2.2-RC1
+TAG?=organization-mainnet-v1.0-p25.2.2
 CORE_REPO?=https://github.com/stellar/stellar-core.git
 CORE_REF?=v25.2.2-external
 CORE_VERSION?=v25.2.2
