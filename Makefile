@@ -1,14 +1,16 @@
 __PHONY__: build build-deps build-deps-core build-deps-horizon build-deps-rpc
 
-TAG?=community-v1.0-p26.0.1
+TAG?=community-v1.0-p26.1.0
 CORE_REPO?=https://github.com/stellar/stellar-core.git
-CORE_REF?=v26.0.1
-CORE_VERSION?=v26.0.1
+CORE_REF?=v26.1.0
 CORE_CONFIGURE_FLAGS?=--disable-tests
 HORIZON_REPO?=https://github.com/stellar/stellar-horizon.git
 HORIZON_REF?=v26.0.0
 RPC_REPO?=https://github.com/stellar/stellar-rpc.git
 RPC_REF?=v26.0.0
+# stellar-rpc v26 locks ethnum 1.5.2, which breaks on Rust >=1.97 (E0512).
+# 1.96.0 was `stable` when v26.1.0 shipped and is the last version that builds it.
+RPC_RUST_TOOLCHAIN?=1.96.0
 
 build-deps: build-deps-core build-deps-horizon build-deps-rpc
 
@@ -16,7 +18,6 @@ build-deps-core:
 	docker build --platform linux/amd64 -t stellar-core:$(CORE_REF) -f Dockerfile.core . \
 	  --build-arg REF="$(CORE_REF)" \
 	  --build-arg CORE_REPO="$(CORE_REPO)" \
-	  --build-arg CORE_VERSION="$(CORE_VERSION)" \
 	  --build-arg CONFIGURE_FLAGS="$(CORE_CONFIGURE_FLAGS)"
 
 build-deps-horizon:
@@ -27,7 +28,8 @@ build-deps-horizon:
 build-deps-rpc:
 	docker build --platform linux/amd64 -t stellar-rpc:$(RPC_REF) -f Dockerfile.rpc . \
 	  --build-arg REF="$(RPC_REF)" \
-	  --build-arg RPC_REPO="$(RPC_REPO)"
+	  --build-arg RPC_REPO="$(RPC_REPO)" \
+	  --build-arg RUST_TOOLCHAIN_VERSION="$(RPC_RUST_TOOLCHAIN)"
 
 build:
 	$(MAKE) build-deps
