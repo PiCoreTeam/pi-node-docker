@@ -9,9 +9,9 @@ This image runs in **persistent mode**, storing all data and configuration on a 
 The image uses the following software:
 
 - **PostgreSQL 16** - for storing both stellar-core and horizon data
-- **stellar-core** 24.1.0
-- **horizon** 24.0.0
-- **stellar-rpc** 24.0.0 (Soroban RPC, disabled by default)
+- **stellar-core** 26.1.0
+- **horizon** 26.0.0
+- **stellar-rpc** 26.0.0 (Soroban RPC, disabled by default)
 - **Supervisord** - for managing the processes of the services above
 - **webfsd** - for serving local history archives
 
@@ -32,7 +32,7 @@ The software listens on several ports. At minimum, expose the horizon HTTP port 
 You **must** mount a host directory to `/opt/stellar` to store persistent data:
 
 ```shell
-$ docker run --rm -it -p "31401:8000" -v "/path/to/data:/opt/stellar" --name pi-node pinetwork/pi-node-docker:mainnet-relay-v1.0-p24.1.0 --mainnetrelay
+$ docker run --rm -it -p "31401:8000" -v "/path/to/data:/opt/stellar" --name pi-node pinetwork/pi-node-docker:mainnet-relay-v1.0-p26.1.0 --mainnetrelay
 ```
 
 The `-v` option mounts the host directory into the container at `/opt/stellar`. Use an absolute path and keep it consistent across container restarts.
@@ -209,7 +209,7 @@ $ docker run -it --rm \
     -p "31402:31402" \
     -p "31403:1570" \
     --name pi-node \
-    pinetwork/pi-node-docker:mainnet-relay-v1.0-p24.1.0 --mainnetrelay
+    pinetwork/pi-node-docker:mainnet-relay-v1.0-p26.1.0 --mainnetrelay
 ```
 
 **Start a mainnet relay node in the background (after initialization):**
@@ -220,7 +220,7 @@ $ docker run -d \
     -p "31402:31402" \
     -p "31403:1570" \
     --name pi-node \
-    pinetwork/pi-node-docker:mainnet-relay-v1.0-p24.1.0 --mainnetrelay
+    pinetwork/pi-node-docker:mainnet-relay-v1.0-p26.1.0 --mainnetrelay
 ```
 
 **Start with pre-set PostgreSQL password (non-interactive):**
@@ -232,7 +232,7 @@ $ docker run -d \
     -p "31403:1570" \
     -e POSTGRES_PASSWORD=your_secure_password \
     --name pi-node \
-    pinetwork/pi-node-docker:mainnet-relay-v1.0-p24.1.0 --mainnetrelay
+    pinetwork/pi-node-docker:mainnet-relay-v1.0-p26.1.0 --mainnetrelay
 ```
 
 ## Docker Compose
@@ -244,7 +244,7 @@ name: pi-node
 
 services:
   mainnet:
-    image: pinetwork/pi-node-docker:mainnet-relay-v1.0-p24.1.0
+    image: pinetwork/pi-node-docker:mainnet-relay-v1.0-p26.1.0
     container_name: mainnet
     env_file:
       - ./.env
@@ -278,7 +278,7 @@ $ docker compose up -d mainnet
 $ make build
 ```
 
-This builds the image as `pinetwork/pi-node-docker:mainnet-relay-v1.0-p24.1.0`.
+This builds the image as `pinetwork/pi-node-docker:mainnet-relay-v1.0-p26.1.0`.
 
 Note: `make build` also runs `make build-deps` which builds stellar-core, horizon, and stellar-rpc from source.
 
