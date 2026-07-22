@@ -1,12 +1,11 @@
 __PHONY__: build build-deps build-deps-core build-deps-horizon
 
-TAG?=organization-mainnet-v1.0-p25.2.2
+TAG?=organization-mainnet-v1.0-p26.1.0
 CORE_REPO?=https://github.com/stellar/stellar-core.git
-CORE_REF?=v25.2.2-external
-CORE_VERSION?=v25.2.2
+CORE_REF?=v26.1.0
 CORE_CONFIGURE_FLAGS?=--disable-tests
 HORIZON_REPO?=https://github.com/stellar/stellar-horizon.git
-HORIZON_REF?=v25.1.0
+HORIZON_REF?=v26.0.0
 
 build-deps: build-deps-core build-deps-horizon
 
@@ -14,7 +13,6 @@ build-deps-core:
 	docker build --platform linux/amd64 -t stellar-core:$(CORE_REF) -f Dockerfile.core . \
 	  --build-arg REF="$(CORE_REF)" \
 	  --build-arg CORE_REPO="$(CORE_REPO)" \
-	  --build-arg CORE_VERSION="$(CORE_VERSION)" \
 	  --build-arg CONFIGURE_FLAGS="$(CORE_CONFIGURE_FLAGS)"
 
 build-deps-horizon:
