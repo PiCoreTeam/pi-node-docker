@@ -1,24 +1,29 @@
-FROM golang:1.25-bookworm AS builder
+FROM golang:1.26-trixie AS builder
 
 ARG RPC_REPO=https://github.com/stellar/stellar-rpc.git
 ARG REF
 ARG RUST_TOOLCHAIN_VERSION=stable
-
-ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y build-essential jq curl git && apt-get clean
-
-ENV CARGO_HOME=/rust/.cargo
-ENV RUSTUP_HOME=/rust/.rust
-ENV PATH="/usr/local/go/bin:$CARGO_HOME/bin:${PATH}"
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUST_TOOLCHAIN_VERSION
 
 WORKDIR /go/src/github.com/stellar/stellar-rpc
 RUN git clone ${RPC_REPO} /go/src/github.com/stellar/stellar-rpc
 RUN git fetch origin ${REF}
 RUN git checkout ${REF}
 
+ENV CARGO_HOME=/rust/.cargo
+ENV RUSTUP_HOME=/rust/.rust
+ENV PATH="/usr/local/go/bin:$CARGO_HOME/bin:${PATH}"
+ENV DEBIAN_FRONTEND=noninteractive
+
+# The repo's rust-toolchain.toml (channel = "stable") outranks --default-toolchain,
+# so force the chosen toolchain via RUSTUP_TOOLCHAIN. Needed because current stable
+# (>=1.97) breaks the transitive dep ethnum 1.5.2 (E0512).
+ENV RUSTUP_TOOLCHAIN=${RUST_TOOLCHAIN_VERSION}
+
+RUN apt-get update && apt-get install -y build-essential jq && apt-get clean
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUST_TOOLCHAIN_VERSION
+
 RUN make build-stellar-rpc
 
-FROM ubuntu:focal
+FROM ubuntu:24.04
 COPY --from=builder /go/src/github.com/stellar/stellar-rpc/stellar-rpc /usr/local/bin/stellar-rpc
-CMD stellar-rpc
+CMD ["stellar-rpc"]

@@ -1,17 +1,50 @@
-# Pi Network does not patch stellar-core — use the upstream prebuilt binary.
-# Building v26 from source requires clang>=20 / g++>=14 (C++20), which Ubuntu
-# focal/jammy in our previous build stage do not provide. The official image
-# already ships a release-built binary on noble (matches our runtime base).
-ARG STELLAR_CORE_PREBUILT=stellar/stellar-core:26.0.1-3109.e78c97ed0.noble
-FROM ${STELLAR_CORE_PREBUILT} AS source
-
-FROM ubuntu:noble
+# Build stage — build stellar-core from source.
+# v26 requires C++20, so the build stage is Ubuntu 24.04 (noble) with clang-20 /
+# libc++-20, matching upstream stellar/quickstart's recipe.
+FROM ubuntu:24.04 AS buildstage
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
-    apt-get -y install libunwind8 postgresql curl sqlite3 iproute2 && \
+    apt-get -y install iproute2 procps lsb-release \
+                       git build-essential pkg-config autoconf automake libtool \
+                       bison flex sed perl libpq-dev parallel libgoogle-perftools-dev \
+                       clang-20 libc++abi-20-dev libc++-20-dev \
+                       postgresql curl
+
+ARG CORE_REPO=https://github.com/stellar/stellar-core.git
+ARG REF
+ARG CONFIGURE_FLAGS='--disable-tests'
+RUN git clone --branch ${REF} --recurse-submodules ${CORE_REPO} /stellar-core
+WORKDIR /stellar-core
+
+ARG CC=clang-20
+ARG CXX=clang++-20
+ARG CFLAGS='-O3 -g1 -fno-omit-frame-pointer'
+ARG CXXFLAGS='-O3 -g1 -fno-omit-frame-pointer -stdlib=libc++'
+
+RUN ./autogen.sh
+RUN ./install-rust.sh
+ENV PATH "/root/.cargo/bin:$PATH"
+RUN ./configure CC="${CC}" CXX="${CXX}" CFLAGS="${CFLAGS}" CXXFLAGS="${CXXFLAGS}" ${CONFIGURE_FLAGS}
+
+# Build Rust/cargo artifacts serially before the parallel C++ compile: concurrent
+# cargo writes during `make -j` trigger spurious ETXTBSY (Error 127) on macOS overlayfs.
+RUN make -C src \
+      rust/RustBridge.h rust/RustBridge.cpp \
+      ../src/rust/src/dep-trees/equal-trees.stamp \
+      ../src/rust/soroban/soroban-libs.stamp \
+      ../target/release/librust_stellar_core.a
+RUN make -j$(nproc)
+RUN make install
+
+# Deploy stage — only runtime deps.
+FROM ubuntu:24.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get -y install libunwind8 postgresql curl sqlite3 iproute2 \
+                       libc++abi1-20 libc++1-20 && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=source /usr/bin/stellar-core /usr/local/bin/stellar-core
+COPY --from=buildstage /usr/local/bin/stellar-core /usr/local/bin/stellar-core
 EXPOSE 11625
 EXPOSE 11626
 CMD ["stellar-core"]
