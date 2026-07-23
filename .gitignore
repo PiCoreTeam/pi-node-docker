@@ -1,4 +1,5 @@
 .idea/
 docker-compose.yml
 internal/
+docs/
 
