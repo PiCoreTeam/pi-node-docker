@@ -1,10 +1,11 @@
-FROM golang:1.23 AS builder
+FROM golang:1.25 AS builder
 
+ARG HORIZON_REPO=https://github.com/stellar/stellar-horizon.git
 ARG REF
-WORKDIR /go/src/github.com/stellar/go
-RUN git clone https://github.com/stellar/go /go/src/github.com/stellar/go
+WORKDIR /src
+RUN git clone ${HORIZON_REPO} /src
 RUN git fetch origin ${REF}
 RUN git checkout ${REF}
 ENV CGO_ENABLED=0
-ENV GOFLAGS="-ldflags=-X=github.com/stellar/go/support/app.version=${REF}-(built-from-source)"
-RUN go install github.com/stellar/go/services/horizon
+ENV GOFLAGS="-ldflags=-X=github.com/stellar/go-stellar-sdk/support/app.version=${REF}-(built-from-source)"
+RUN go build -o /go/bin/horizon -trimpath -v .

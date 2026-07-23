@@ -158,8 +158,12 @@ show_horizon() {
   field "$w" "Protocol Version"  "$(jq_val "$json" '.current_protocol_version')"
   field "$w" "Horizon Version"   "$(jq_val "$json" '.horizon_version')"
 
-  # Show ingest progress when syncing
-  if [ "$state" = "Syncing" ]; then
+  # Show ingest progress while syncing or during initial state ingestion.
+  # In the initial history-archive state ingestion phase horizon reports
+  # core_latest_ledger=0 and ingest_latest_ledger=0 (state "Catching Up"),
+  # yet the log still carries progress="NN%" lines. The block self-gates on a
+  # progress= match, so nothing prints when there is no active ingest logging.
+  if [ "$state" = "Syncing" ] || [ "$state" = "Catching Up" ]; then
     local log_pattern="${HORIZON_LOG_DIR}/horizon-stdout---supervisor-*.log"
     local log_file
     log_file=$(ls -t $log_pattern 2>/dev/null | head -n 1 || true)

@@ -1,88 +1,50 @@
-# Build stage, includes everything needed to build.
-FROM ubuntu:focal AS buildstage
+# Build stage — build stellar-core from source.
+# v26 requires C++20, so the build stage is Ubuntu 24.04 (noble) with clang-20 /
+# libc++-20, matching upstream stellar/quickstart's recipe.
+FROM ubuntu:24.04 AS buildstage
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get -y install iproute2 procps lsb-release \
                        git build-essential pkg-config autoconf automake libtool \
-                       bison flex sed perl libpq-dev parallel libunwind-dev \
-                       clang-12 libc++abi-12-dev libc++-12-dev \
+                       bison flex sed perl libpq-dev parallel libgoogle-perftools-dev \
+                       clang-20 libc++abi-20-dev libc++-20-dev \
                        postgresql curl
 
 ARG CORE_REPO=https://github.com/stellar/stellar-core.git
 ARG REF
-RUN git clone --depth 1 --branch ${REF} --recurse-submodules --shallow-submodules \
-    ${CORE_REPO} /stellar-core
+ARG CONFIGURE_FLAGS='--disable-tests'
+RUN git clone --branch ${REF} --recurse-submodules ${CORE_REPO} /stellar-core
 WORKDIR /stellar-core
 
-ARG CC=clang-12
-ARG CXX=clang++-12
+ARG CC=clang-20
+ARG CXX=clang++-20
 ARG CFLAGS='-O3 -g1 -fno-omit-frame-pointer'
 ARG CXXFLAGS='-O3 -g1 -fno-omit-frame-pointer -stdlib=libc++'
-ARG CONFIGURE_FLAGS='--disable-tests'
 
 RUN ./autogen.sh
 RUN ./install-rust.sh
 ENV PATH "/root/.cargo/bin:$PATH"
 RUN ./configure CC="${CC}" CXX="${CXX}" CFLAGS="${CFLAGS}" CXXFLAGS="${CXXFLAGS}" ${CONFIGURE_FLAGS}
 
-# Pre-install the pinned Rust toolchain (from rust-toolchain.toml) so that
-# 'cargo +<channel>' during make -j does NOT trigger rustup to download and
-# write new executables to the overlay filesystem (which causes ETXTBSY).
-RUN TOOLCHAIN=$(sed -n 's/channel *= *"\([^"]*\)"/\1/p' rust-toolchain.toml) && \
-    rustup toolchain install "${TOOLCHAIN}" --no-self-update
-
-# Pre-generate all cargo/cxxbridge-derived targets before parallel make to avoid
-# ETXTBSY on Docker Desktop / macOS overlay filesystem.
-#
-# Root cause: make -j runs cargo (writing new executables to the overlay layer)
-# concurrently with bash-executed Makefile recipes. Writing a new executable to
-# an overlayfs layer while another process exec's /bin/bash triggers a kernel
-# ETXTBSY bug present in Docker Desktop on macOS.
-#
-# The Makefile rules that trigger cargo during make -j:
-#   $(RUST_CXXBRIDGE): Makefile  → reinstalls cxxbridge if Makefile is newer
-#   rust/RustBridge.h: ... $(RUST_CXXBRIDGE)  → re-runs if cxxbridge is newer
-#   main/StellarCoreVersion.cpp: always  → always re-runs (sed, safe but races)
-#
-# Fix: patch Makefile rules, install cxxbridge, generate derived files, then
-# touch everything in dependency order so make sees every target as up-to-date
-# and skips all cargo/bash steps during make -j.
-#
-# Final mtime order required by make:
-#   Makefile < cxxbridge < RustBridge.{h,cpp} < StellarCoreVersion.cpp
-RUN sed -i \
-      -e 's|^main/StellarCoreVersion\.cpp: always|main/StellarCoreVersion.cpp:|' \
-      src/Makefile && \
-    mkdir -p src/rust/bin && \
-    CARGO_HTTP_MULTIPLEXING=false cargo install --force --locked \
-      --root src/rust cxxbridge-cmd --version 1.0.68 && \
-    touch src/rust/bin/cxxbridge && \
-    src/rust/bin/cxxbridge src/rust/src/bridge.rs --cfg test=false \
-      --header --output src/rust/RustBridge.h && \
-    src/rust/bin/cxxbridge src/rust/src/bridge.rs --cfg test=false \
-      --output src/rust/RustBridge.cpp && \
-    touch src/rust/RustBridge.h src/rust/RustBridge.cpp && \
-    sed -e "s@%%VERSION%%@${REF}@" \
-        src/main/StellarCoreVersion.cpp.in > src/main/StellarCoreVersion.cpp
-
-# Pre-run all Rust build steps serially before parallel make to avoid ETXTBSY.
-# Any cargo write to the overlay filesystem (index updates, .rlib compilation,
-# soroban builds, main Rust library) races with concurrent bash forks in make -j
-# recipes. Running them serially here ensures no cargo I/O happens during make -j.
-RUN make -C src ../src/rust/src/dep-trees/equal-trees.stamp && \
-    make -C src ../src/rust/soroban/soroban-libs.stamp && \
-    make -C src ../target/release/librust_stellar_core.a
-
-RUN make -j4
+# Build Rust/cargo artifacts serially before the parallel C++ compile: concurrent
+# cargo writes during `make -j` trigger spurious ETXTBSY (Error 127) on macOS overlayfs.
+RUN make -C src \
+      rust/RustBridge.h rust/RustBridge.cpp \
+      ../src/rust/src/dep-trees/equal-trees.stamp \
+      ../src/rust/soroban/soroban-libs.stamp \
+      ../target/release/librust_stellar_core.a
+RUN make -j$(nproc)
 RUN make install
 
-# Deploy stage — only runtime deps
-FROM ubuntu:focal
+# Deploy stage — only runtime deps.
+FROM ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
-    apt-get -y install libunwind8 postgresql curl sqlite iproute2 libc++abi1-12 libc++1-12
+    apt-get -y install libunwind8 postgresql curl sqlite3 iproute2 \
+                       libc++abi1-20 libc++1-20 && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY --from=buildstage /usr/local/bin/stellar-core /usr/local/bin/stellar-core
 EXPOSE 11625
 EXPOSE 11626
-CMD stellar-core
+CMD ["stellar-core"]

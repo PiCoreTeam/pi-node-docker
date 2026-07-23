@@ -16,7 +16,7 @@ apt-get install -y libpq-dev libsqlite3-dev libsasl2-dev \
                    postgresql-client-16 postgresql-16 postgresql-contrib-16 \
                    sudo vim zlib1g-dev supervisor psmisc \
                    rsync jq netcat-openbsd webfs \
-                   libunwind8 sqlite3 libc++abi1 libc++1  # stellar-core runtime deps
+                   libunwind8 sqlite3 libc++abi1-20 libc++1-20  # stellar-core runtime deps
 
 apt-get clean
 rm -rf /var/lib/apt/lists/*
