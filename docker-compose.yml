@@ -1,0 +1,13 @@
+services:
+  mainnet:
+    image: pinetwork/pi-node-docker:organization_mainnet-v1.3-p19.6
+    container_name: pi-node
+    restart: unless-stopped
+    volumes:
+      - ./data/stellar:/opt/stellar
+      - ./data/logs:/var/log/supervisor
+    ports:
+      - "31401:8000"
+      - "31402:31402"
+      - "31403:1570"
+    command: ["--mainnet", "--enable-auto-migrations"]
