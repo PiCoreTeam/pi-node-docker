@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+  pi-node:
+    image: pinetwork/pi-node-docker:latest
+    container_name: pi-node
+    restart: unless-stopped
+    volumes:
+      - ./health:/opt/stellar/health
+      - ./metrics:/opt/stellar/metrics
+      - pi-data:/opt/stellar/data
+    ports:
+      - "8000:8000"
+      - "11626:11626"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/stellar/health/healthcheck.sh || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  metrics-exporter:
+    image: alpine:latest
+    container_name: pi-node-metrics
+    command: ["/bin/sh", "-c", "apk add --no-cache bash curl netcat-openbsd && bash /opt/stellar/metrics/metrics_server.sh"]
+    volumes:
+      - ./metrics:/opt/stellar/metrics
+    ports:
+      - "9105:9105"
+    depends_on:
+      - pi-node
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: pi-prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prom-data:/prometheus
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: pi-grafana
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring:/etc/grafana/provisioning/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=piadmin
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: pi-node-exporter
+    ports:
+      - "9100:9100"
+    restart: unless-stopped
+
+volumes:
+  pi-data:
+  prom-data:
+  grafana-data:
