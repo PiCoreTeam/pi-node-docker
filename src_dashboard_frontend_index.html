@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent Stress Testing Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🚀 Intelligent Stress Testing Dashboard</h1>
+            <div class="status-indicator">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">Connecting...</span>
+            </div>
+        </header>
+
+        <!-- Main Metrics Grid -->
+        <div class="metrics-grid">
+            <!-- Error Rate -->
+            <div class="metric-card">
+                <div class="metric-icon">⚠️</div>
+                <div class="metric-content">
+                    <h3>Error Rate</h3>
+                    <div class="metric-value" id="errorRate">0.00%</div>
+                    <div class="metric-label">of total requests</div>
+                </div>
+            </div>
+
+            <!-- Stress Load -->
+            <div class="metric-card">
+                <div class="metric-icon">📊</div>
+                <div class="metric-content">
+                    <h3>Stress Load</h3>
+                    <div class="metric-value" id="stressLoad">0.00%</div>
+                    <div class="metric-label">current capacity</div>
+                </div>
+            </div>
+
+            <!-- Bypassed Errors -->
+            <div class="metric-card">
+                <div class="metric-icon">⏭️</div>
+                <div class="metric-content">
+                    <h3>Bypassed Errors</h3>
+                    <div class="metric-value" id="bypassedErrors">0</div>
+                    <div class="metric-label">auto-handled</div>
+                </div>
+            </div>
+
+            <!-- Fixed Errors -->
+            <div class="metric-card success">
+                <div class="metric-icon">✅</div>
+                <div class="metric-content">
+                    <h3>Fixed Errors</h3>
+                    <div class="metric-value" id="fixedErrors">0</div>
+                    <div class="metric-label">automatically resolved</div>
+                </div>
+            </div>
+
+            <!-- Manual Intervention -->
+            <div class="metric-card warning">
+                <div class="metric-icon">👤</div>
+                <div class="metric-content">
+                    <h3>Manual Intervention</h3>
+                    <div class="metric-value" id="manualIntervention">0</div>
+                    <div class="metric-label">requires attention</div>
+                </div>
+            </div>
+
+            <!-- Success Rate -->
+            <div class="metric-card success">
+                <div class="metric-icon">🎯</div>
+                <div class="metric-content">
+                    <h3>Success Rate</h3>
+                    <div class="metric-value" id="successRate">100.00%</div>
+                    <div class="metric-label">overall performance</div>
+                </div>
+            </div>
+
+            <!-- System Uptime -->
+            <div class="metric-card">
+                <div class="metric-icon">⏱️</div>
+                <div class="metric-content">
+                    <h3>System Uptime</h3>
+                    <div class="metric-value" id="uptime">0h 0m</div>
+                    <div class="metric-label">continuous operation</div>
+                </div>
+            </div>
+
+            <!-- Active Recovery -->
+            <div class="metric-card">
+                <div class="metric-icon">🔧</div>
+                <div class="metric-content">
+                    <h3>Active Recovery</h3>
+                    <div class="metric-value" id="activeRecovery">0</div>
+                    <div class="metric-label">processes running</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <div class="chart-card">
+                <h3>Error Rate Trend</h3>
+                <canvas id="errorRateChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Request Statistics</h3>
+                <canvas id="requestStatsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Detailed Statistics -->
+        <div class="stats-section">
+            <h2>📈 Detailed Statistics</h2>
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Current Value</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="statsTableBody">
+                    <tr>
+                        <td>Total Requests</td>
+                        <td id="totalRequests">0</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Successful Requests</td>
+                        <td id="successfulRequests">0</td>
+                        <td><span id="successPercentage">0%</span></td>
+                    </tr>
+                    <tr>
+                        <td>Failed Requests</td>
+                        <td id="failedRequests">0</td>
+                        <td><span id="failurePercentage">0%</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Last Updated: <span id="lastUpdate">Never</span></p>
+            <p>Intelligent Stress Testing System v1.0.0</p>
+        </footer>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+# Error Handling Rules Configuration
+
+# Error Category Definitions
+error_categories:
+  critical:
+    errors:
+      - "DatabaseConnectionError"
+      - "OutOfMemoryError"
+      - "SystemError"
+      - "FatalError"
+      - "SecurityError"
+    action: "alert_and_retry"
+    
+  recoverable:
+    errors:
+      - "TimeoutError"
+      - "ConnectionError"
+      - "RateLimitError"
+      - "TemporaryError"
+      - "NetworkError"
+      - "ServiceUnavailableError"
+    action: "auto_retry"
+    
+  ignorable:
+    errors:
+      - "ClientCancellationError"
+      - "NotFoundError"
+      - "ValidationError"
+    action: "log_only"
+    
+  warning:
+    errors:
+      - "DeprecationWarning"
+      - "ConfigurationWarning"
+    action: "log_only"
+
+# Recovery Strategy Definitions
+auto_fix_strategies:
+  - error_type: "DatabaseConnectionError"
+    strategy: "reconnect_with_backoff"
+    max_attempts: 5
+    base_delay: 2
+    
+  - error_type: "RateLimitError"
+    strategy: "rate_limit_backoff"
+    max_attempts: 3
+    base_delay: 60
+    
+  - error_type: "TimeoutError"
+    strategy: "exponential_backoff"
+    max_attempts: 5
+    base_delay: 2
+    
+  - error_type: "ConnectionError"
+    strategy: "reconnect_with_backoff"
+    max_attempts: 5
+    base_delay: 2
+    
+  - error_type: "OutOfMemoryError"
+    strategy: "restart_with_increased_memory"
+    max_attempts: 1
+    base_delay: 10
+    
+  - error_type: "SecurityError"
+    strategy: "refresh_credentials"
+    max_attempts: 3
+    base_delay: 5
+
+# Pattern-based Error Classification
+error_patterns:
+  - pattern: "connection.*refused|timeout|timed out"
+    category: "recoverable"
+    strategy: "exponential_backoff"
+    severity: 6
+    
+  - pattern: "out of memory|oom|memory error"
+    category: "critical"
+    strategy: "restart_with_increased_memory"
+    severity: 10
+    
+  - pattern: "rate limit|too many requests|429"
+    category: "recoverable"
+    strategy: "rate_limit_backoff"
+    severity: 4
+    
+  - pattern: "database.*connection|db error|sql"
+    category: "critical"
+    strategy: "reconnect_with_backoff"
+    severity: 8
+    
+  - pattern: "unauthorized|authentication|forbidden"
+    category: "critical"
+    strategy: "refresh_credentials"
+    severity: 9
+    
+  - pattern: "not found|404"
+    category: "warning"
+    strategy: "log_and_continue"
+    severity: 3
+
+# Alert Configuration
+alerts:
+  # Enable email alerts
+  email_enabled: false
+  email_recipients:
+    - "devops@example.com"
+  
+  # Enable Slack alerts
+  slack_enabled: false
+  slack_webhook: "${SLACK_WEBHOOK_URL}"
+  
+  # Enable PagerDuty alerts
+  pagerduty_enabled: false
+  pagerduty_key: "${PAGERDUTY_KEY}"
