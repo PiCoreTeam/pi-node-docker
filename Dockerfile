@@ -51,3 +51,10 @@ ADD start /
 RUN ["chmod", "+x", "start"]
 
 ENTRYPOINT ["/start"]
+# Copy health check script
+COPY health/healthcheck.sh /health/healthcheck.sh
+RUN chmod +x /health/healthcheck.sh
+
+# Docker native healthcheck
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=60s \
+  CMD /health/healthcheck.sh || exit 1
