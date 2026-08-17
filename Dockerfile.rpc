@@ -15,8 +15,7 @@ ENV PATH="/usr/local/go/bin:$CARGO_HOME/bin:${PATH}"
 ENV DEBIAN_FRONTEND=noninteractive
 
 # The repo's rust-toolchain.toml (channel = "stable") outranks --default-toolchain,
-# so force the chosen toolchain via RUSTUP_TOOLCHAIN. Needed because current stable
-# (>=1.97) breaks the transitive dep ethnum 1.5.2 (E0512).
+# so force the chosen toolchain via RUSTUP_TOOLCHAIN.
 ENV RUSTUP_TOOLCHAIN=${RUST_TOOLCHAIN_VERSION}
 
 RUN apt-get update && apt-get install -y build-essential jq && apt-get clean
