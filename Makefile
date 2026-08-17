@@ -1,16 +1,14 @@
 __PHONY__: build build-deps build-deps-core build-deps-horizon build-deps-rpc
 
-TAG?=mainnet-relay-v1.0-p26.1.0
+TAG?=mainnet-relay-v1.0-p27.1.0
 CORE_REPO?=https://github.com/stellar/stellar-core.git
-CORE_REF?=v26.1.0
+CORE_REF?=v27.1.0
 CORE_CONFIGURE_FLAGS?=--disable-tests
 HORIZON_REPO?=https://github.com/stellar/stellar-horizon.git
-HORIZON_REF?=v26.0.0
+HORIZON_REF?=v27.0.0
 RPC_REPO?=https://github.com/stellar/stellar-rpc.git
-RPC_REF?=v26.0.0
-# stellar-rpc v26 locks ethnum 1.5.2, which breaks on Rust >=1.97 (E0512).
-# 1.96.0 was `stable` when v26.1.0 shipped and is the last version that builds it.
-RPC_RUST_TOOLCHAIN?=1.96.0
+RPC_REF?=v27.1.1
+RPC_RUST_TOOLCHAIN?=stable
 
 build-deps: build-deps-core build-deps-horizon build-deps-rpc
 

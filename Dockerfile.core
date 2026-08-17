@@ -1,5 +1,5 @@
 # Build stage — build stellar-core from source.
-# v26 requires C++20, so the build stage is Ubuntu 24.04 (noble) with clang-20 /
+# v27 requires C++20, so the build stage is Ubuntu 24.04 (noble) with clang-20 /
 # libc++-20, matching upstream stellar/quickstart's recipe.
 FROM ubuntu:24.04 AS buildstage
 ENV DEBIAN_FRONTEND=noninteractive
