@@ -137,18 +137,20 @@ Migration scripts run automatically on every container start via
 | 002 | `DEPRECATED_SQL_LEDGER_STATE=false` for stellar-core 21.x            |
 | 003 | Remove deprecated settings for stellar-core 23.x                     |
 | 004 | Register `rpc` supervisord program on existing volumes               |
+| 005 | Point supervisord's postgresql program at the PG 16 binary           |
+| 006 | Refresh `bin/start` scripts on the volume from image defaults        |
+| 007 | Refresh planner statistics via `vacuumdb --analyze-in-stages`        |
 
 ### Upgrading from an older community release
 
-Upgrading an existing volume (e.g., `community-v1.0-p23.0.1` or
-`community-v1.0-p25.2.2`) is seamless:
+Upgrading an existing volume (e.g., `community-v1.0-p27.1.0`) is seamless:
 
 1. Stop the old container.
 2. Start the new image with the **same volume path**.
-3. On first boot: the start script copies the `stellar-rpc/` default tree into
-   the volume (since it doesn't exist yet), initializes its configs with your
-   network values, and migration 004 appends the `[program:rpc]` block to
-   your existing `supervisord.conf`.
+3. On first boot, migrations bring the volume up to date. Volumes predating
+   stellar-rpc also get the `stellar-rpc/` default tree copied in, its configs
+   initialized with your network values, and a `[program:rpc]` block appended
+   to `supervisord.conf` by migration 004.
 4. Once stellar-core has caught up, `supervisorctl start horizon` and
    `supervisorctl start rpc` as needed.
 
