@@ -1,13 +1,13 @@
 __PHONY__: build build-deps build-deps-core build-deps-horizon build-deps-rpc
 
-TAG?=mainnet-relay-v1.0-p27.1.0
+TAG?=mainnet-relay-v1.0-p28.0.0
 CORE_REPO?=https://github.com/stellar/stellar-core.git
-CORE_REF?=v27.1.0
+CORE_REF?=v28.0.0
 CORE_CONFIGURE_FLAGS?=--disable-tests
 HORIZON_REPO?=https://github.com/stellar/stellar-horizon.git
-HORIZON_REF?=v27.0.0
+HORIZON_REF?=v28.0.0
 RPC_REPO?=https://github.com/stellar/stellar-rpc.git
-RPC_REF?=v27.1.1
+RPC_REF?=v28.0.0
 RPC_RUST_TOOLCHAIN?=stable
 
 build-deps: build-deps-core build-deps-horizon build-deps-rpc
