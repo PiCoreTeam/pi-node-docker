@@ -10,9 +10,9 @@ restarts and allowing configuration customization.
 ## Software Versions
 
 - **PostgreSQL 16** — stores stellar-core and horizon data
-- **stellar-core 28.0.0** — Pi Network consensus node
-- **horizon 28.0.0** — Stellar Horizon API server (captive-core mode)
-- **stellar-rpc 28.0.0** — Soroban JSON-RPC server (captive-core mode, sqlite backend)
+- **stellar-core 28.0.1** — Pi Network consensus node
+- **horizon 28.0.1** — Stellar Horizon API server (captive-core mode)
+- **stellar-rpc 28.0.1** — Soroban JSON-RPC server (captive-core mode, sqlite backend)
 - **Supervisord** — process manager
 
 ## Usage
@@ -36,7 +36,7 @@ $ docker run --rm -it \
     -p "31402:31402" \
     -v "/path/to/data:/opt/stellar" \
     --name pi-node \
-    pinetwork/pi-node-docker:community-v1.0-p28.0.0 --mainnet
+    pinetwork/pi-node-docker:community-v1.0-p28.0.1 --mainnet
 ```
 
 Use a consistent absolute path across restarts. The second portion
@@ -167,7 +167,7 @@ $ docker run --rm -it \
     -v "/opt/pi-node:/opt/stellar" \
     -e POSTGRES_PASSWORD=yourpassword \
     --name pi-node \
-    pinetwork/pi-node-docker:community-v1.0-p28.0.0 --mainnet
+    pinetwork/pi-node-docker:community-v1.0-p28.0.1 --mainnet
 ```
 
 *Mainnet node (background, after initialization):*
@@ -179,7 +179,7 @@ $ docker run -d \
     -v "/opt/pi-node:/opt/stellar" \
     -e POSTGRES_PASSWORD=yourpassword \
     --name pi-node \
-    pinetwork/pi-node-docker:community-v1.0-p28.0.0 --mainnet
+    pinetwork/pi-node-docker:community-v1.0-p28.0.1 --mainnet
 ```
 
 *Testnet node:*
@@ -190,7 +190,7 @@ $ docker run -d \
     -v "/opt/pi-testnet:/opt/stellar" \
     -e POSTGRES_PASSWORD=yourpassword \
     --name pi-testnet \
-    pinetwork/pi-node-docker:community-v1.0-p28.0.0 --testnet
+    pinetwork/pi-node-docker:community-v1.0-p28.0.1 --testnet
 ```
 
 ## Viewing Logs
