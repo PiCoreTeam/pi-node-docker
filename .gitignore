@@ -3,3 +3,10 @@ docker-compose.yml
 stellar-data/
 internal/
 docs/
+
+# Python stress-testing utility
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+results.json

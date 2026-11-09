@@ -1,0 +1,13 @@
+# Safe local-only example. Start a local HTTP service before running this test.
+target:
+  base_url: "http://127.0.0.1:8000"
+load:
+  duration_seconds: 30
+  concurrency: 5
+  ramp_up_seconds: 5
+  request_interval_seconds: 0.2
+  timeout_seconds: 5
+endpoints:
+  - path: "/health"
+    method: "GET"
+    weight: 1

@@ -1,0 +1,39 @@
+name: Stress Testing Utility CI
+
+on:
+  push:
+    paths:
+      - "stress_testing/**"
+      - "tests/test_stress_testing.py"
+      - "config/stress-test.example.yaml"
+      - "requirements-stress-testing.txt"
+      - ".github/workflows/stress-testing.yml"
+  pull_request:
+    paths:
+      - "stress_testing/**"
+      - "tests/test_stress_testing.py"
+      - "config/stress-test.example.yaml"
+      - "requirements-stress-testing.txt"
+      - ".github/workflows/stress-testing.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements-stress-testing.txt
+      - run: python -m pip install -e .
+      - run: pi-node-stress-test --help
+      - run: python -m stress_testing --help
+      - run: python -m compileall -q stress_testing
+      - run: python -m unittest discover -s tests -p "test_stress_testing.py" -v

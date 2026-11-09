@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pi-node-stress-testing"
+version = "1.0.0"
+description = "Isolated, safe-by-default HTTP load testing utility"
+readme = "STRESS_TESTING.md"
+requires-python = ">=3.11"
+dependencies = ["aiohttp>=3.10,<4", "PyYAML>=6.0,<7"]
+
+[project.scripts]
+pi-node-stress-test = "stress_testing.cli:main"
+
+[tool.setuptools]
+packages = ["stress_testing"]
