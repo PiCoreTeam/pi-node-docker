@@ -36,7 +36,7 @@ No flags = all sections.
 State is derived from `core_latest_ledger` and `ingest_latest_ledger` reported by the Horizon API:
 
 - **Catching Up** — node is bootstrapping, both captive core and ingest ledgers are at zero. This is expected on first start and can take a significant amount of time depending on network and hardware
-- **Not Running** — Horizon API is not responding
+- **Not Running** — Horizon API is not responding or the required ledger values are missing or invalid
 - **Syncing** — ingest is running but still behind core; progress details are shown when available
 - **Synced** — core and ingest are within 5 ledgers of each other
 
@@ -59,3 +59,14 @@ Deployed to `/usr/local/bin/node-status` inside the container.
 ## Error handling
 
 Each section is independent. If an endpoint is down, that section shows "Not responding" and the rest still work. If `jq` is missing, the script exits immediately.
+
+## Regression tests
+
+Run from the repository root:
+
+```bash
+python3 node-status/test_node_status.py
+```
+
+The tests require Python 3, Bash and jq.
+API responses are mocked; no running node or network connection is required.

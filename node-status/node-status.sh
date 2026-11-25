@@ -35,7 +35,7 @@ jq_val() {
     echo "N/A"
     return
   fi
-  echo "$json" | jq -r "$filter // empty" 2>/dev/null || echo "N/A"
+  echo "$json" | jq -er "$filter // empty" 2>/dev/null || echo "N/A"
 }
 
 # Compute sync state: Catching Up / Not Running / Syncing / Synced.
@@ -43,7 +43,7 @@ jq_val() {
 sync_state() {
   local core="$1" ingest="$2"
 
-  if [ "$ingest" = "N/A" ] || [ "$core" = "N/A" ]; then
+  if ! [[ "$core" =~ ^(0|[1-9][0-9]*)$ && "$ingest" =~ ^(0|[1-9][0-9]*)$ ]]; then
     echo "Not Running"
     return
   fi
